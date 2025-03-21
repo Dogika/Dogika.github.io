@@ -1,7 +1,7 @@
 // any kind of graphics/onscreen objects (buttons, models, etc.)
 
-function Button(x, y, text, fn, scale=1){
-    this.width = scale * (text.length*23*G_PREFERED_SCALAR+10*G_PREFERED_SCALAR);
+function Button(x, y, text, fn, scale=1, fill){
+    this.width = scale * 300*G_PREFERED_SCALAR;
     this.height = scale * 45*G_PREFERED_SCALAR;
     this.x = x - this.width*0.5;
     this.y = y - this.height*0.5;
@@ -9,6 +9,16 @@ function Button(x, y, text, fn, scale=1){
     this.text = text;
     this.fn = fn;
     this.scale = scale;
+    this.lineWidth = 4;
+    this.fill = fill;
+}
+
+class ButtonHelper {
+    static drawButtons() {
+        for(let i = 0; i < g_buttonsList.length; i++){
+            drawButton(g_buttonsList[i]);
+        }
+    }
 }
 
 function rectangleContainsPoint(x, y, width, height, x0, y0) {
