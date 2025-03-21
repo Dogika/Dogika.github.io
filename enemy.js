@@ -50,7 +50,8 @@ function EnemyObject(type=null, x=0, y=0, ID=-1) {
         this.patternsFired = 0;
         this.attackIndex = attackIndex;
         this.attacked = true;
-        
+        console.log(attackIndex);
+        console.log(this.attacks);
         for (let i = 0; i < this.attacks[this.attackIndex].length; i++) {
             let behavior = this.attacks[this.attackIndex][i];
             g_timeline.push(new Event(
