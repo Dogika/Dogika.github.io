@@ -8,18 +8,22 @@ function Player(p_initial_x, p_initial_y, p_initial_vx=0, p_initial_vy=0) {
     this.radius = 8 * G_PREFERED_SCALAR;
     this.canDash = true;
     this.stamina = G_MAX_STAMINA;
-    this.selectedWeapon = "pistol";
-    this.health = 100;
+    this.selectedWeapon = "";
+    this.health = G_PLAYER_MAX_HEALTH;
     this.laser = new Hitscan(G_HITSCAN_LASER, p_initial_x, p_initial_y, p_initial_vx, p_initial_vy);
     this.laser.type.width = 0;
+    this.room_i;
+    this.room_j;
     
     this.updatePosition = (deltaTime) => {
         if (!g_keyboard[" "] && !this.canDash) {
             this.canDash = true;
         }
         
-        if (this.x - this.radius <= g_screenBoundLeft || this.x + this.radius >= g_screenBoundRight) this.x = this.prev_x;
-        if (this.y - this.radius <= g_screenBoundTop || this.y + this.radius >= g_screenBoundBottom) this.y = this.prev_y;
+        let [colliding_x, colliding_y] = g_currentRoom.collisionWall(this.x, this.y, this.x, this.y, this.radius);
+        
+        if (colliding_x) this.x = this.prev_x;
+        if (colliding_y) this.y = this.prev_y;
         
         let staminaDrain = this.calculateVelocity(deltaTime);
         
@@ -30,13 +34,24 @@ function Player(p_initial_x, p_initial_y, p_initial_vx=0, p_initial_vy=0) {
         
         this.prev_x = this.x;
         this.prev_y = this.y;
-        if (this.x + this.vx * deltaTime - this.radius > g_screenBoundLeft && this.x + this.vx * deltaTime + this.radius < g_screenBoundRight) 
+        
+        [colliding_x, colliding_y] = g_currentRoom.collisionWall(this.x, this.y, this.x + this.vx * deltaTime, this.y + this.vy * deltaTime, this.radius);
+        
+        if (!colliding_x) 
             this.x += this.vx * G_PREFERED_SCALAR * deltaTime;
-        if (this.y + this.vy * deltaTime - this.radius > g_screenBoundTop && this.y + this.vy * deltaTime + this.radius < g_screenBoundBottom) 
+        if (!colliding_y) 
             this.y += this.vy * G_PREFERED_SCALAR * deltaTime;
         
-        g_screenCenterFocus_x = Math.floor((this.x + g_screenWidth*0.5)/g_screenWidth) * g_screenWidth;
-        g_screenCenterFocus_y = Math.floor((this.y + g_screenHeight*0.5)/g_screenHeight) * g_screenHeight;
+        let newRoom_i = Math.floor((this.x + g_screenWidth*0.5)/g_screenWidth);
+        let newRoom_j = Math.floor((this.y + g_screenHeight*0.5)/g_screenHeight);
+        if (newRoom_i !== this.room_i || newRoom_j !== this.room_j) {
+            this.room_i = newRoom_i;
+            this.room_j = newRoom_j;
+            g_screenCenterFocus_x = this.room_i * g_screenWidth;
+            g_screenCenterFocus_y = this.room_j * g_screenHeight;
+            //g_paragraphs.tutorial
+            g_currentRoom = g_currentLevel[this.room_j][this.room_i];
+        }
     }
     
     this.calculateVelocity = (deltaTime) => {
@@ -50,12 +65,12 @@ function Player(p_initial_x, p_initial_y, p_initial_vx=0, p_initial_vy=0) {
                 playSound(soundEffects.step, 0.2);
             target_vx /= tv_magnitude;
             target_vy /= tv_magnitude;
-            this.vx = expDecay(this.vx, target_vx, 0.01, deltaTime);
-            this.vy = expDecay(this.vy, target_vy, 0.01, deltaTime);
+            this.vx = MathHelper.expDecay(this.vx, target_vx, 0.01, deltaTime);
+            this.vy = MathHelper.expDecay(this.vy, target_vy, 0.01, deltaTime);
         } else {
             if (this.vx < -0.0001 || this.vx > 0.0001 || this.vy < -0.0001 || this.vy > 0.0001) {
-                this.vx = expDecay(this.vx, target_vx, 0.01, deltaTime);
-                this.vy = expDecay(this.vy, target_vy, 0.01, deltaTime);
+                this.vx = MathHelper.expDecay(this.vx, target_vx, 0.01, deltaTime);
+                this.vy = MathHelper.expDecay(this.vy, target_vy, 0.01, deltaTime);
             }
         }
         
@@ -94,6 +109,17 @@ function Player(p_initial_x, p_initial_y, p_initial_vx=0, p_initial_vy=0) {
         let stretchAngle = Math.atan2(this.vy, this.vx);
         let stretchFactor = Math.max(1, m / G_PLAYER_BASE_SPEED * G_PLAYER_SMEAR_PERCENT);
         
+        //draw arms
+        let d_mouse_x = g_mouse.x-player_show_x;
+        let d_mouse_y = g_mouse.y-player_show_y;
+        let pointing = Math.atan2(d_mouse_y, d_mouse_x);
+        //let [dx, dy] = normalize([this.vx, this.vy]);
+        //let pos_x = dx * 0.809016994375 + dy * 0.587785252292;
+        //let pos_y = dx * -0.587785252292 + dy * 0.809016994375;
+        
+        ctx.fillStyle= "#c68642"
+        drawRotatedRect(ctx, player_show_x-15, player_show_y-7.5, 30, 15, pointing*(180/Math.PI)+90);
+        //drawRotatedRect(ctx, player_show_x-30, player_show_y, 30, 15, 45);
         
         //castShadow(ctx, this.x + dx-dy, this.y + dx+dy, this.radius*0.4);
         //castShadow(ctx, this.x + dx+dy, this.y + dy-dx, this.radius*0.4);
@@ -112,7 +138,7 @@ function Player(p_initial_x, p_initial_y, p_initial_vx=0, p_initial_vy=0) {
         //please use rotation matrices please please theyre on wikipedia or i can teach you
         //let xpos = 5*Math.cos(Math.atan2(this.vy, this.vx)-.2*Math.PI);
         //let ypos = 5*Math.sin(Math.atan2(this.vy, this.vx)-.2*Math.PI);
-        let [dx, dy] = normalize([this.vx, this.vy]);
+        let [dx, dy] = MathHelper.normalize([this.vx, this.vy]);
         let pos_x = dx * 0.809016994375 + dy * 0.587785252292;
         let pos_y = dx * -0.587785252292 + dy * 0.809016994375;
         pos_x *= 5;
@@ -120,7 +146,7 @@ function Player(p_initial_x, p_initial_y, p_initial_vx=0, p_initial_vy=0) {
         ctx.ellipse(player_show_x + pos_x, player_show_y + pos_y, 2 * Math.max(1, m / G_PLAYER_BASE_SPEED * G_PLAYER_SMEAR_PERCENT), 2, Math.atan2(this.vy, this.vx), 0, 2 * Math.PI);
         ctx.fillStyle = Color.RED;
         ctx.fill();
-        
+    
         
         //ctx.drawImage(PLAYER_SPRITE, player_show_x-8, player_show_y-8, 64, 64);
         
