@@ -22,13 +22,13 @@ const G_CAMERA_DECAY_SPEED = 0.008;
 const G_CAMERA_CENTER_PERCENT = 0.3;
 
 const G_SHOTGUN_SHOTS = 10;
-const G_SHOTGUN_SPREAD = Math.PI*0.3;
 const G_SHOTGUN_SPEED_RANGE = 0.01;
 const G_SHOTGUN_SPEED_SHIFT = 0.01;
 const G_SHOTGUN_BULLET_DIFFERENCE = 0.6;
-const G_NAILGUN_SPREAD = Math.PI*0.25;
 const G_BULLET_FRICTION = 0.001;
 const G_MAGNET_LIFE = 5000;
+
+const G_PUNCH_DURATION = 100;
 
 const g_screenWidth = window.innerHeight*0.95;
 const g_screenHeight = window.innerHeight*0.95;
@@ -41,6 +41,7 @@ const G_BULLET_BARRIER_X = g_screenWidth;
 const G_BULLET_BARRIER_Y = g_screenHeight;
 
 const G_WALL_THICKNESS = 0;
+const G_COLLISION_DAMAGE = 10;
 
 const G_TARGET_MOUSE = true;
 
@@ -54,6 +55,8 @@ const G_PLAYER_START_VY = 0.00000001 * (1 - topLeft - topRight);
 
 const G_PREFERED_SCALAR = g_screenHeight/500;
 
+
+const G_PLAYER_MAX_HEALTH = 100;
 const G_BOSS_MAX_HEALTH = 8000;
 const G_BOSS_NAME_0 = "SUN, THE PURITY OF HEAVEN";
 const G_LEVEL_TITLE_0 = "KILL THE SUN";
@@ -79,6 +82,9 @@ const G_SPONGEBOB_HEIGHT = SPONGEBOB_SPRITE.naturalHeight * 0.12;
 
 const PLAYER_SPRITE = new Image();
 PLAYER_SPRITE.src = "https://codehs.com/uploads/451f71a7f1db1bd096698a4a6248621b";
+
+const PORTAL_SPRITE = new Image();
+PORTAL_SPRITE.src = "https://codehs.com/uploads/e3ae02ac799dbd2774fec784b5f41180";
 
 Array.prototype.remove = function(index) {
     return this.splice(index, 1)[0];   
