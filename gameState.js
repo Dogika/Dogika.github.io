@@ -2,12 +2,23 @@ let canvas = document.getElementsByTagName('canvas')[0];
     canvas.width = g_screenWidth;
     canvas.height = g_screenHeight;
 let ctx = canvas.getContext("2d");
+
+let g_gameLoaded = false;
+
 let g_screenCenterFocus_x = G_SCREEN_CENTER_FOCUS_START_X;
 let g_screenCenterFocus_y = G_SCREEN_CENTER_FOCUS_START_Y;
 let g_screenBoundLeft = -g_screenWidth*0.5;
 let g_screenBoundRight = g_screenWidth*0.5;
 let g_screenBoundTop = -g_screenHeight*0.5;
 let g_screenBoundBottom = g_screenHeight*0.5;
+
+let g_paragraph = new Paragraph(g_screenWidth*0.5, g_screenHeight*0.7, {
+    color: Color.WHITE,
+    align: "center",
+    font: "40px VCR OSD Mono"
+});
+
+let g_bloodSplatters = [];
 
 let g_patternInstances = [];
 let g_patternInstanceIDs = 0;
@@ -16,12 +27,17 @@ let g_enemyInstanceIDs = 0;
 let g_playerBulletInstances = [];
 let g_playerBulletInstanceIDs = 0;
 
+let g_consumableInstances = [];
+
+let g_spawnPortals = [];
+
 let g_playerBulletGradients = [];
 
 let g_playerHitscanInstances = [];
 let g_playerFadinHitscans = [];
 
 let g_magnetInstances = [];
+let g_coinInstances = [];
 
 let g_screenShakeInstances = [];
 
@@ -37,7 +53,8 @@ let g_gameWindow = -1;
 let g_gameLost = false;
 let g_stats = {
     iTimeUsed : 0,
-    damageDealt: 0
+    damageDealt: 0,
+    enemiesKilled: 0
 };
 
 let g_target = {
@@ -45,10 +62,13 @@ let g_target = {
     y: 0
 };
 
+let g_currentRoom;
+let g_currentLevel;
+
 let g_lightSource = [0, 0, 200];
 let g_lightOn = true;
 
-let g_boss_ptr;
+let g_bosses = [];
 let g_timeSinceLastBossAttack;
 
 let g_shootingLaser = false;
@@ -80,7 +100,7 @@ let g_trigger = {};
 let bgm = {
     outOfCombat: new Audio('https://raw.githubusercontent.com/Dogika/compsci-contest-2025/refs/heads/main/0-1 Clean.wav'),
     inCombat: new Audio('https://raw.githubusercontent.com/Dogika/compsci-contest-2025/refs/heads/main/0-1.wav'),
-    title: new Audio('')
+    title: new Audio('https://raw.githubusercontent.com/Dogika/compsci-contest-2025/refs/heads/main/ezyZip.mp3')
 }
 
 let soundEffects = {
@@ -95,6 +115,10 @@ let soundEffects = {
 let g_volumeTotal = 0.5;
 let g_volumeMusic = 0.5*g_volumeTotal;
 let g_volumeSound = 0.5*g_volumeTotal;
+
+let g_paused = false;
+let g_pauseDifference = 0;
+let g_pauseStart;
 
 function playSound(sound, volume=1) {
     sound.volume = volume;
@@ -118,7 +142,6 @@ let g_buttonsList = [];
 let g_inCombat = false;
 
 function setTimeDialation(newTimeDialation) {
-    console.log(newTimeDialation);
     g_timeDialation = newTimeDialation;
     g_invTimeDialation = 1/newTimeDialation;
     bgm.outOfCombat.playbackRate = newTimeDialation;
@@ -141,7 +164,17 @@ function resetGame() {
     soundEffects.step.playbackRate = 2;
     
     g_titleAlpha = 1;
+    g_bosses = [];
     
+    g_currentLevel = TUTORIAL;
+    let newRoom_i = Math.floor((G_PLAYER_START_X + g_screenWidth*0.5)/g_screenWidth);
+    let newRoom_j = Math.floor((G_PLAYER_START_Y + g_screenHeight*0.5)/g_screenHeight);
+    g_currentRoom = g_currentLevel[newRoom_j][newRoom_i];
+    g_screenCenterFocus_x = newRoom_i * g_screenWidth;
+    g_screenCenterFocus_y = newRoom_j * g_screenHeight;
+    
+    g_nextEvent_ptr = undefined;
+    g_timeline = [];
     g_patternInstances = [];
     g_patternInstanceIDs = 0;
     g_enemyInstances = [];
@@ -149,19 +182,36 @@ function resetGame() {
     g_playerBulletInstances = [];
     g_magnetInstances = [];
     g_playerFadinHitscans = [];
+    g_spawnPortals = [];
     g_player = new Player(G_PLAYER_START_X, G_PLAYER_START_Y, G_PLAYER_START_VX, G_PLAYER_START_VY);
+    g_player.room_i = newRoom_i;
+    g_player.room_j = newRoom_j;
     g_boss_ptr = undefined;
     resetStats();
-    g_timeline = [
-        new Event(g_currentTime+3000 * g_invTimeDialation, createSpawnEnemyMethod(ENEMY_TYPE_1, 0, 0, 6000, true)),
-    ];
-    g_nextEvent_ptr = g_timeline.remove(0);
+    //g_nextEvent_ptr = g_timeline.remove(0);
     
-    bgm.outOfCombat.play();
-    bgm.inCombat.play();
+    for (let i = 0; i < g_currentLevel.length; i++)
+    for (let j = 0; j < g_currentLevel[0].length; j++) {
+        let room = g_currentLevel[i][j];
+        
+        if (!room) continue;
+        
+        room.reset();
+    }
+    
+    g_paragraph.textObjects = [];
+    
+    g_timeline.push(new Event(g_currentTime, function() {
+        g_paragraph.textObjects.push(new TypedText("Goal: Find a weapon.", 0, 20));
+    }));
+    g_timeline.push(new Event(g_currentTime+120+500, function() {
+        g_paragraph.textObjects.push(new TypedText("The glowing orbs", 0, 20));
+        g_paragraph.textObjects.push(new TypedText("are weapons.", 0, 20));
+    }));
 }
 
 function resetStats(stats=g_stats) {
     g_stats.iTimeUsed = 0;
     g_stats.damageDealt = 0;
+    g_stats.enemiesKilled = 0;
 };
