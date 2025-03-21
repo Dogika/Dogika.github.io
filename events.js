@@ -14,6 +14,25 @@ function Event(p_timestamp=0, p_executableMethod) {
 for behaviors with a delay insert an event right 
 before this that stops bullet from moving.
 */
+
+function SpawnEnemyMethod(enemyType, x, y, isBoss=false) {
+    this.instanceEnemy = structuredClone(enemyType)
+    this.x = x;
+    this.y = y;
+    this.isBoss = isBoss;
+    
+    this.create = (add_x, add_y) => {
+        return function() {
+            spawnEnemy(
+                structuredClone(enemyType), 
+                x + add_x, 
+                y + add_y, 
+                isBoss
+            );
+        }
+    }
+}
+
 function createChangePatternBulletsBehaviorMethod(behavior, patternInstanceID) {
     let bulletList = g_patternInstances[patternInstanceID];
     let forwardSpeed = behavior.forwardSpeed;
@@ -26,7 +45,7 @@ function createChangePatternBulletsBehaviorMethod(behavior, patternInstanceID) {
     if (behavior.targetPlayer)
     return function executeChangePatternBulletsBehaviorEvent() {
             for (let bullet of bulletList) {
-                let [dx, dy] = normalize([g_player.x - bullet.x, g_player.y - bullet.y]);
+                let [dx, dy] = MathHelper.normalize([g_player.x - bullet.x, g_player.y - bullet.y]);
                 bullet.dx = dx;
                 bullet.dy = dy;
                 bullet.vx = dx * forwardSpeed;
@@ -59,6 +78,7 @@ function createFirePatternMethod(behavior, enemy) {
     instancePattern.hueShift = behavior.hueShift;
     return function executeFirePatternEvent() {
         firePattern(instancePattern, enemy.x, enemy.y);
+        enemy.patternsFired++;
     }
 }
 
@@ -98,10 +118,15 @@ function createMoveEnemyMethod(behavior, enemy) {
     }
 }
 
-function createSpawnEnemyMethod(enemyType, x, y, deathTimestamp, isBoss=false) {
-    if (deathTimestamp) {
-    let instanceEnemy = structuredClone(enemyType);
-    return function executeSpawnEnemyEvent() {
-        spawnEnemy(instanceEnemy, x, y, isBoss);
+function createAttackEnemyMethod(behavior, enemy) {
+    return function executeAttackEnemyEvent() {
+        if (behavior.type == "loop") {
+            enemy.attackType = "loop";
+        } else if (behavior.type == "random") {
+            enemy.attackType = "random";
+        } else if (behavior.type == "distance") {
+            enemy.attackType = "distanceBased";
+            enemy.distances = behavior.distances;
+        } 
     }
-}}
+}
