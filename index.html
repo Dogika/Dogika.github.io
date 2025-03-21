@@ -1,27 +1,52 @@
+<!--there are comments scattered around for our process-->
+<!-- altfire only works for the nailgun due to time limit.-->
+<!-- options was not implemented-->
+<!-- quit stops the program and leaves the title music and says goodbye in the console-->
+<!-- glowing orbs represent guns items that can be picked up-->
+<!-- altfire when holding the nailgun shoots out a magnet from the player that attracts the nails-->
+<!-- the white areas represent doors to the next or previous room-->
+<!-- lines of code at competition date: 3716-->
 <html>
   <head>
       <title>MEGADEATH</title>
       <link rel="icon" type="image/x-icon" href="icon.png">
   </head>
   <body>
-      <pre>
+      <div class="controls">
+        <pre>
   -- CONTROLS -- 
 
 WALK   WASD or PL;'
 DASH          SPACE
 SHOOT           MB1
+ALTFIRE      E or O
 PISTOL       1 or 9
 SHOTGUN      2 or 0 
 NAILGUN      3 or -
-NAIL//MAGNET E or O
-LAZER//EYE   4 or =</pre>
+LAZER//EYE   4 or =
+PAUSE             Y</pre>
+        </div>
+        <div class="loading">
+            <pre>
+Unfortunately, if you see this, 
+that means Github servers are having some issues. 
+Due to the limitations of cloud technology, 
+it is not guaranteed this website will 
+be able to access all web files in order to run.
+The only thing you can do is wait a few seconds, and/or reload, and repeat.</pre>
+        </div>
     <style>
-    pre {
-        color: yellow;
-        font-family: 'VCR OSD Mono';
-        font-size: 170%;
-        text-shadow: 0px 0px 6px #ffff00;
-    }
+        .loading {
+            color: black;
+            font-family: 'VCR OSD Mono';
+            font-size: 170%;
+        }
+        .controls {
+            color: yellow;
+            font-family: 'VCR OSD Mono';
+            font-size: 170%;
+            text-shadow: 0px 0px 8px #ffff00;
+        }
         @font-face {
             font-family: 'VCR OSD Mono';
             src: url('VCROSDMono.woff2')
@@ -36,6 +61,7 @@ LAZER//EYE   4 or =</pre>
     <script src="https://unpkg.com/fontfaceobserver@2.1.0/fontfaceobserver.standalone.js"></script>
     <script>"use strict";</script>
     <script src="constants.js"></script>
+    <script src="consumable.js"></script>
     <script src="math.js"></script>
     <script src="magnet.js"></script>
     <script src="typeObject.js"></script>
@@ -50,8 +76,11 @@ LAZER//EYE   4 or =</pre>
     <script src="enemyPattern.js"></script>
     <script src="hitscan.js"></script>
     <script src="player.js"></script>
+    <script src="paragraph.js"></script>
+    <script src="typingText.js"></script>
     <script src="gameState.js"></script>
     <script src="weapon.js"></script>
+    <script src="room.js"></script>
     <script src="objectDefs.js"></script>
     <script src="main.js" onload="start()"></script>
 <script>
@@ -141,7 +170,7 @@ EXTRA:
         left: 0;
         right: 0;
         border: 1px solid #cccccc;
-        background-color: #000000;
+        background-color: #FFFFFF;
     }
 </style>
   </body>
