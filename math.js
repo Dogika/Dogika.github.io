@@ -1,4 +1,4 @@
-Vclass MathHelper {
+class MathHelper {
     static rotate(vx, vy, rx, ry) {
         return [vx * rx - vy * ry, vx * ry + vy * rx];
     }
