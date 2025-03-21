@@ -54,6 +54,18 @@ Hitscan.prototype.display = function(ctx) {
     ctx.lineCap = "butt"; // without resetting it, it will lag the game
 }
 
+Hitscan.prototype.distanceSquared = function(x, y) {
+    let oTp_x = x - this.origin_x;
+    let oTp_y = y - this.origin_y;
+    let pointTime = MathHelper.dot2D([this.dx, this.dy], [oTp_x, oTp_y]);
+    pointTime /= this.dx * this.dx + this.dy * this.dy;
+    
+    let diff_x = this.origin_x + this.dx * pointTime - x;
+    let diff_y = this.origin_y + this.dy * pointTime - y;
+    
+    return diff_x * diff_x + diff_y * diff_y;
+}
+
 function findTime(hitscan) {
     let time = G_FARAWAY;
     
@@ -96,7 +108,7 @@ function createPlayerHitscan(hitscan_t, offset_x=0, offset_y=0) {
     hitscan.origin_x = g_player.x + offset_x;
     hitscan.origin_y = g_player.y + offset_y;
     
-    [hitscan.dx, hitscan.dy] = normalize([g_target.x - hitscan.origin_x, g_target.y - hitscan.origin_y]);
+    [hitscan.dx, hitscan.dy] = MathHelper.normalize([g_target.x - hitscan.origin_x, g_target.y - hitscan.origin_y]);
     
     findTime(hitscan);
     
@@ -107,7 +119,7 @@ function setPlayerHitscan(hitscan, offset_x, offset_y) {
     hitscan.origin_x = g_player.x + offset_x;
     hitscan.origin_y = g_player.y + offset_y;
     
-    [hitscan.dx, hitscan.dy] = normalize([g_target.x - hitscan.origin_x, g_target.y - hitscan.origin_y]);
+    [hitscan.dx, hitscan.dy] = MathHelper.normalize([g_target.x - hitscan.origin_x, g_target.y - hitscan.origin_y]);
     
     findTime(hitscan);
 }
