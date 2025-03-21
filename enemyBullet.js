@@ -1,5 +1,5 @@
 function BulletObject(bulletType=null, x=0, y=0, dx=0, dy=0, speedCoefficient=1, patternInstanceID=0, showTimestamp=0, loopColorID=null) {
-    this.bulletType = bulletType;
+    this.type = bulletType;
     this.x = x;
     this.y = y;
     this.vx = dx * speedCoefficient;
@@ -17,7 +17,7 @@ function BulletObject(bulletType=null, x=0, y=0, dx=0, dy=0, speedCoefficient=1,
     if (typeof loopColorID === "number") {
         this.instanceColor = g_loopColors[loopColorID];
     } else {
-        this.instanceColor = bulletType.color;
+        this.instanceColor = type.color;
     }
     
     this.updatePosition = (deltaTime) => {
@@ -27,7 +27,7 @@ function BulletObject(bulletType=null, x=0, y=0, dx=0, dy=0, speedCoefficient=1,
         let dy_1 = this.dx * this.ry + this.dy * this.rx;
         this.dx = dx_1;
         this.dy = dy_1;
-        if (this.forwardAccel != 0) this.forwardSpeed = Math.max(this.bulletType.minSpeed, Math.min(this.forwardSpeed + this.forwardAccel * deltaTime, this.bulletType.maxSpeed));
+        if (this.forwardAccel != 0) this.forwardSpeed = Math.max(this.type.minSpeed, Math.min(this.forwardSpeed + this.forwardAccel * deltaTime, this.type.maxSpeed));
         this.vx = dx_1 * this.forwardSpeed;
         this.vy = dy_1 * this.forwardSpeed;
     }
@@ -39,26 +39,27 @@ function BulletObject(bulletType=null, x=0, y=0, dx=0, dy=0, speedCoefficient=1,
         let show_x = this.x + g_camera.x;
         let show_y = this.y + g_camera.y;
         
-        drawCircle(ctx, show_x, show_y, this.bulletType.radius * 0.75, Color.WHITE);
+        drawCircle(ctx, show_x, show_y, this.type.radius * 0.75, Color.WHITE);
         
-        if (this.bulletType.shape == "circle") {
-            addCircleBorder(ctx, show_x, show_y, this.bulletType.radius);
-        } else if (this.bulletType.shape == "diamond") {
-            addDiamondBorder(ctx, show_x, show_y, this.dx, this.dy, this.bulletType.radius);
-        } else if (this.bulletType.shape == "triangle") {
-            addTriangleBorder(ctx, show_x, show_y, this.dx, this.dy, this.bulletType.radius * 1.3333);
+        if (this.type.shape == "circle") {
+            addCircleBorder(ctx, show_x, show_y, this.type.radius);
+        } else if (this.type.shape == "diamond") {
+            addDiamondBorder(ctx, show_x, show_y, this.dx, this.dy, this.type.radius);
+        } else if (this.type.shape == "triangle") {
+            addTriangleBorder(ctx, show_x, show_y, this.dx, this.dy, this.type.radius * 1.3333);
         }
         ctx.strokeStyle = this.instanceColor;
         ctx.stroke();
     }
 }
 
-function BulletType(behaviors=[], radius=5, shape="circle", minSpeed=0, maxSpeed=1, color) {
+function BulletType(behaviors=[], damage=1, radius=5, shape="circle", minSpeed=0, maxSpeed=1, color) {
     this.behaviors = behaviors;
     this.radius = radius;
     this.shape = shape; // circle, diamond, triangle
     this.minSpeed = minSpeed;
     this.maxSpeed = maxSpeed;
+    this.damage = damage;
     if (!color) {
         if (shape == "circle") {
             this.color = Color.CYAN;
