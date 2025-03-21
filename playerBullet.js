@@ -31,7 +31,7 @@ function PlayerBulletObject(type, x=0, y=0, vx=0, vy=-1) {
                 let dx = other.x - this.x; 
                 let dy = other.y - this.y;
                 if (dx * dx + dy * dy > (this.type.radius + other.type.radius) * (this.type.radius + other.type.radius)) continue; 
-                let [n_x, n_y] = normalize([dx, dy]);
+                let [n_x, n_y] = MathHelper.normalize([dx, dy]);
 
                 let thisScalarNormal = n_x * this.vx + n_y * this.vy;
                 let otherScalarNormal = n_x * other.vx + n_y * other.vy;
@@ -73,10 +73,10 @@ function PlayerBulletObject(type, x=0, y=0, vx=0, vy=-1) {
         if (this.type.shape == "circle") {
             addCircleBorder(ctx, show_x, show_y, speedScale+this.type.radius, this.type.width, speedScale);
         } else if (this.type.shape == "diamond") {
-            let [dx, dy] = normalize([this.vx, this.vy]);
+            let [dx, dy] = MathHelper.normalize([this.vx, this.vy]);
             addDiamondBorder(ctx, show_x, show_y, dx, dy, speedScale+this.type.radius, this.type.width, speedScale);
         } else if (this.type.shape == "triangle") {
-            let [dx, dy] = normalize([this.vx, this.vy]);
+            let [dx, dy] = MathHelper.normalize([this.vx, this.vy]);
             addTriangleBorder(ctx, show_x, show_y, dx, dy, speedScale+this.type.radius, this.type.width, speedScale);
         }
         if (this.type.fill) {
