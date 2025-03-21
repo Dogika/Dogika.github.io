@@ -19,7 +19,7 @@ function mouseEvent(e) {
     g_mouse.x *= canvas.width/bounds.width; // rescale mouse coordinates to canvas pixels
     g_mouse.y *= canvas.height/bounds.height;
     
-     if (e.type === "mousedown") {
+    if (e.type === "mousedown") {
         if (e.button === 0) {
             g_mouse.down = true;
         } else {
@@ -31,9 +31,11 @@ function mouseEvent(e) {
         } else {
             g_mouse.down2 = false;
         }
+        if (!g_mouse.disabled)
         for(let i = 0; i < g_buttonsList.length; i++){
             checkIfButtonClicked(g_buttonsList[i]);   
         }
+        g_mouse.disabled = false;
     }
 }
 
@@ -49,10 +51,10 @@ function getControl(controlType) {
     if (controlType == "laser")     return g_keyboard["4"] || g_keyboard["="];
     if (controlType == "dash")      return g_keyboard[" "];
     if (controlType == "shoot")     return g_mouse.down;
-    if (controlType == "fist")      return g_keyboard["f"];
+    if (controlType == "punch")     return g_keyboard["f"];
     if (controlType == "quit")      return g_keyboard["`"];
-    if (controlType == "menu")      return g_keyboard["Escape"];
     if (controlType == "alt")       return g_mouse.down2 || g_keyboard["e"] || g_keyboard["o"];
+    if (controlType == "pause")     return g_keyboard["y"];
     
     throw new Error("CustomError: controlType '"+controlType+"' not registered!");
 }
