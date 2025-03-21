@@ -6,7 +6,7 @@ function FirePatternBehavior(timestamp, pattern, loopColorID=null, hueShift=null
     this.hueShift = hueShift;
 }
 
-function pattern_loop(initial_time, pattern, loops, interval=0, rotation_offset=0, initialColor=pattern.bulletType.color, hueShift=0) {
+function PatternGroup(index, initial_time, pattern, loops, interval=0, rotation_offset=0, initialColor=pattern.bulletType.color, hueShift=0) {
     let loopColorID = g_loopColorIDs++;
     g_loopColors[loopColorID] = initialColor;
     let behavior_list = [];
@@ -16,7 +16,10 @@ function pattern_loop(initial_time, pattern, loops, interval=0, rotation_offset=
         behavior.timestamp += interval;
         pattern.petalOffset += rotation_offset;
     }
-    return behavior_list;
+    
+    this.behaviorList = behavior_list;
+    this.type = "patternGroup";
+    this.index = index;
 }
 
 function MoveIntegrationBehavior(timestamp, final_time, final_x, final_y) {
@@ -58,6 +61,19 @@ function SniperMovementBehavior(timestamp, maxSpeed, acceleration, friction, min
     this.minDist = minDist;
     this.maxDist = maxDist;
     this.seperationFactor = seperationFactor;
+}
+
+function AttackRandomBehavior() {
+    this.type = "random";
+}
+
+function AttackLoopBehavior() {
+    this.type = "loop";
+}
+
+function AttackDistanceBasedBehavior(distances) {
+    this.type = "distance";
+    this.distances = distances;
 }
 
 /*
