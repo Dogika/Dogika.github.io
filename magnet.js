@@ -9,8 +9,8 @@ function Magnet(timeCreated, x, y, x2, y2) {
         let dx = this.x2 - this.x;
         let dy = this.y2 - this.y;
         if (dx * dx + dy * dy > 1) {
-            this.x = expDecay(this.x, this.x2, 0.01, deltaTime);
-            this.y = expDecay(this.y, this.y2, 0.01, deltaTime);
+            this.x = MathHelper.expDecay(this.x, this.x2, 0.01, deltaTime);
+            this.y = MathHelper.expDecay(this.y, this.y2, 0.01, deltaTime);
         }
     }
     
