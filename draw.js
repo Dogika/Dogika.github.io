@@ -1,4 +1,5 @@
-const drawButtonFontSize = (30 * G_PREFERED_SCALAR).toString();
+const drawButtonFontSize = (20 * G_PREFERED_SCALAR).toString();
+
 function drawButton(button) {
     if (!button.x) return;
     if (
@@ -6,47 +7,52 @@ function drawButton(button) {
             button.x, button.y, 
             button.width, button.height, 
             g_mouse.x, g_mouse.y
-        )
+        ) && g_mouse.down
     ) {
+        ctx.strokeStyle = Color.RED;
         ctx.fillStyle = Color.RED;
     } else {
+        ctx.strokeStyle = Color.WHITE;
         ctx.fillStyle = Color.WHITE;
     }
-    ctx.shadowBlur = 10;
-    ctx.shadowColor = ctx.fillStyle;
-    ctx.fillRect(button.x, button.y, button.width, button.height);
-    ctx.shadowBlur = 0;
+    ctx.beginPath();
+    ctx.roundRect(button.x, button.y, button.width, button.height, 10);
+    ctx.lineWidth = button.lineWidth;
+    ctx.stroke();
+    if (button.fill) 
+        ctx.fill();
     ctx.font = button.scale * drawButtonFontSize+"pt VCR OSD Mono"
-    ctx.fillStyle = Color.BLACK;
+    if (button.fill) 
+        ctx.fillStyle = Color.BLACK;
     ctx.textBaseline = "top"
     ctx.textAlign = "center"
-    ctx.fillText(button.text, button.x+button.width*0.5, button.y-4);
+    ctx.fillText(button.text, button.x+button.width*0.5, button.y+10);
     ctx.textBaseline = "alphabetic";
 }
 
 function castShadow(ctx, x, y, r) {
     let thisVector = [x, y, r]; // r = radius = height
     
-    let n1 = normalize(subtract3(g_lightSource, thisVector));
-    let enemyAxis = setMagnitude(r, cross(n1, cross(n1, G_Z_AXIS))); // perpendicular to n1
+    let n1 = MathHelper.normalize(MathHelper.subtract3(g_lightSource, thisVector));
+    let enemyAxis = MathHelper.setMagnitude(r, MathHelper.cross(n1, MathHelper.cross(n1, G_Z_AXIS))); // perpendicular to n1
     
-    let top = add3(thisVector, enemyAxis)
-    let bottom = subtract3(thisVector, enemyAxis);
+    let top = MathHelper.add3(thisVector, enemyAxis)
+    let bottom = MathHelper.subtract3(thisVector, enemyAxis);
     
-    let n2 = normalize(subtract3(g_lightSource, top));
-    let n3 = normalize(subtract3(g_lightSource, bottom));
+    let n2 = MathHelper.normalize(MathHelper.subtract3(g_lightSource, top));
+    let n3 = MathHelper.normalize(MathHelper.subtract3(g_lightSource, bottom));
     
     let topProjectionFactor = top[G_Z] / n2[G_Z];
     //let middleProjectionFactor = thisVector[G_Z] / n1[G_Z];
     let bottomProjectionFactor = bottom[G_Z] / n3[G_Z];
     
-    let topProjection = subtract2(top.slice(0, 2), scale2(topProjectionFactor, n2.slice(0, 2)));
+    let topProjection = MathHelper.subtract2(top.slice(0, 2), MathHelper.scale2(topProjectionFactor, n2.slice(0, 2)));
     //let [middle_x, middle_y] = subtract2(thisVector.slice(0, 2), scale2(middleProjectionFactor, n1.slice(0, 2)));
-    let bottomProjection = subtract2(bottom.slice(0, 2), scale2(bottomProjectionFactor, n3.slice(0, 2)));
+    let bottomProjection = MathHelper.subtract2(bottom.slice(0, 2), MathHelper.scale2(bottomProjectionFactor, n3.slice(0, 2)));
      
-    let [middle_x, middle_y] = scale2(0.5, add2(topProjection, bottomProjection));
-    let shadowRadius = Math.max(1, 0.5 * Math.hypot(...subtract2(topProjection, bottomProjection)));
-    let shadowAngle = Math.atan2(...subtract2(topProjection, bottomProjection).reverse());
+    let [middle_x, middle_y] = MathHelper.scale2(0.5, MathHelper.add2(topProjection, bottomProjection));
+    let shadowRadius = Math.max(1, 0.5 * Math.hypot(...MathHelper.subtract2(topProjection, bottomProjection)));
+    let shadowAngle = Math.atan2(...MathHelper.subtract2(topProjection, bottomProjection).reverse());
     
     ctx.beginPath();
     ctx.ellipse(
@@ -83,6 +89,10 @@ function drawArc(ctx, x, y, radius, color, fraction1, fraction2, alpha=1) {
 }
 
 function drawStretchedCircle(ctx, x, y, radius, color, stretchFactor, angle, alpha=1) {
+    if (!ctx.ellipse) {
+        drawCircle(ctx, x, y, radius, color, alpha);
+        return;
+    }
     ctx.globalAlpha = alpha;
     ctx.beginPath();
     ctx.ellipse(x, y,radius * stretchFactor, radius, angle, 0, 2 * Math.PI);
@@ -92,6 +102,10 @@ function drawStretchedCircle(ctx, x, y, radius, color, stretchFactor, angle, alp
 }
 
 function drawStretchedArc(ctx, x, y, radius, color, stretchFactor, angle, fraction1, fraction2, alpha=1) {
+    if (!ctx.ellipse) {
+        drawArc(ctx, x, y, radius, color, fraction1, fraction2, alpha);
+        return;
+    }
     ctx.globalAlpha = alpha;
     ctx.beginPath();
     ctx.ellipse(x, y, radius * stretchFactor, radius, angle, fraction1 * 2 * Math.PI, fraction2 * 2 * Math.PI);
@@ -101,6 +115,13 @@ function drawStretchedArc(ctx, x, y, radius, color, stretchFactor, angle, fracti
     ctx.globalAlpha = 1;
 }
 
+function drawRotatedRect(ctx, x, y, w, h, r){
+    ctx.translate(x+(w/2), y+(h/2));
+    ctx.rotate((r*Math.PI)/180);
+    ctx.translate(-(x+(w/2)), -(y+(h/2)));
+    ctx.fillRect(x, y, w, h);
+    ctx.setTransform(1, 0, 0, 1, 0, 0);
+}
 
 function displayStaminaMeter(ctx, x, y) {
     ctx.beginPath();
