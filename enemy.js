@@ -1,16 +1,66 @@
-function EnemyObject(type=null, x=0, y=0) {
+function EnemyObject(type=null, x=0, y=0, ID=-1) {
     this.type = type;
+    this.ID = ID;
     this.x = x;
     this.y = y;
     this.health;
     this.movementType = "timeIntegration";
+    this.attackType;
     this.vx = 0;
     this.vy = 0;
     this.isBoss = false;
     this.state = "idle";
+    this.attacks = [];
+    this.patternIndex = 0;
+    this.attackIndex = 0;
     
-    this.updatePosition = (deltaTime) => {
+    this.attack = function() {
+        if (this.state !== "idle" || !this.attacks) return;
         
+        if (this.attackType === "loop") {
+            if (this.attackIndex === this.attacks.length) {
+                this.attackIndex = 0;
+                this.patternsFired = 0;
+            }
+            
+            if (this.attacked && this.patternsFired !== this.attacks[this.attackIndex].length) return;
+            
+            this.deployPattern(this.attackIndex + 1);
+        } else if (this.attackType === "distanceBased") {
+            if (this.attacked && this.patternsFired !== this.attacks[this.attackIndex].length) return;
+            
+            for (let i = 0; i < this.distances.length; i++) {
+                let dx = g_player.x - this.x;
+                let dy = g_player.y - this.y;
+                
+                if (dx * dx + dy * dy > this.distances[i] * this.distances[i]) continue;
+                
+                this.deployPattern(i);
+                
+                return;
+            }
+        } else if (this.attackType === "random") {
+            if (this.attacked && this.patternsFired !== this.attacks[this.attackIndex].length) return;
+            
+            this.deployPattern(Math.floor(Math.random() * this.attacks.length));
+        }
+    }
+    
+    this.deployPattern = function(attackIndex) {
+        this.patternsFired = 0;
+        this.attackIndex = attackIndex;
+        this.attacked = true;
+        
+        for (let i = 0; i < this.attacks[this.attackIndex].length; i++) {
+            let behavior = this.attacks[this.attackIndex][i];
+            g_timeline.push(new Event(
+                g_currentTime + behavior.timestamp, 
+                createFirePatternMethod(behavior, this)
+            ));
+        }
+    }
+    
+    this.updatePosition = function(deltaTime) {
         if (this.movementType == "timeIntegration") {
             this.x += this.vx * deltaTime;
             this.y += this.vy * deltaTime;
@@ -28,7 +78,7 @@ function EnemyObject(type=null, x=0, y=0) {
             this.vx += (g_player.x - this.x) * this.acceleration * deltaTime;
             this.vy += (g_player.y - this.y) * this.acceleration * deltaTime;
             let m = Math.hypot(this.vx, this.vy);
-            [this.vx, this.vy] = scale2(Math.min(m, this.maxSpeed), normalize([this.vx, this.vy]));
+            [this.vx, this.vy] = MathHelper.scale2(Math.min(m, this.maxSpeed), MathHelper.normalize([this.vx, this.vy]));
             this.move(this.vx * deltaTime, this.vy * deltaTime);
             this.vx *= 1 - this.friction * deltaTime;
             this.vy *= 1 - this.friction * deltaTime;
@@ -38,13 +88,13 @@ function EnemyObject(type=null, x=0, y=0) {
             if (this.state === "idle") {
                 if (dx * dx + dy * dy < this.minDist * this.minDist) {
                     this.state = "runningAway";
-                    this.vx *= 0.1;
-                    this.vy *= 0.1;
+                    this.vx = -dx*0.00001;
+                    this.vy = -dy*0.00001;
                 } else
                 if (dx * dx + dy * dy > this.maxDist * this.maxDist) {
                     this.state = "closingDistance";
-                    this.vx *= 0.1;
-                    this.vy *= 0.1;
+                    this.vx = dx*0.00001;
+                    this.vy = dy*0.00001;
                 }
             } else {
                 if (this.state === "runningAway") {
@@ -55,7 +105,7 @@ function EnemyObject(type=null, x=0, y=0) {
                     this.state === "runningAway" 
                     && dx * dx + dy * dy > (this.minDist + this.seperation) * (this.minDist + this.seperation)
                     || this.state === "closingDistance"
-                    && dx * dx + dy * dy < (this.minDist + this.seperation) * (this.minDist + this.seperation)
+                    && dx * dx + dy * dy < (this.maxDist - this.seperation) * (this.maxDist - this.seperation)
                 ) {
                     this.state = "idle";
                     this.vx *= 0.1;
@@ -65,7 +115,7 @@ function EnemyObject(type=null, x=0, y=0) {
                 this.vx += dx * this.acceleration * deltaTime;
                 this.vy += dy * this.acceleration * deltaTime;
                 let m = Math.hypot(this.vx, this.vy);
-                [this.vx, this.vy] = scale2(Math.min(m, this.maxSpeed), normalize([this.vx, this.vy]));
+                [this.vx, this.vy] = MathHelper.scale2(Math.min(m, this.maxSpeed), MathHelper.normalize([this.vx, this.vy]));
             }
             this.move(this.vx * deltaTime, this.vy * deltaTime);
             this.vx *= 1 - this.friction * deltaTime;
@@ -73,22 +123,25 @@ function EnemyObject(type=null, x=0, y=0) {
         }
     }
     
-    this.move = (vx, vy) => {
+    this.move = function(vx, vy) {
         let newPos_x = this.x + vx * G_PREFERED_SCALAR;
         let newPos_y = this.y + vy * G_PREFERED_SCALAR;
         
-        if (this.x - this.type.radius <= g_screenBoundLeft || this.x + this.type.radius >= g_screenBoundRight) this.x = this.prev_x;
-        if (this.y - this.type.radius <= g_screenBoundTop || this.y + this.type.radius >= g_screenBoundBottom) this.y = this.prev_y;
+        let center_x = Math.floor((this.x + g_screenWidth*0.5)/g_screenWidth) * g_screenWidth;
+        let center_y = Math.floor((this.y + g_screenHeight*0.5)/g_screenHeight) * g_screenHeight;
+        
+        if (this.x - this.type.radius <= g_screenBoundLeft + center_x || this.x + this.type.radius >= g_screenBoundRight + center_x) this.x = this.prev_x;
+        if (this.y - this.type.radius <= g_screenBoundTop + center_y || this.y + this.type.radius >= g_screenBoundBottom + center_y) this.y = this.prev_y;
 
         this.prev_x = this.x;
         this.prev_y = this.y;
-        if (newPos_x - this.type.radius > g_screenBoundLeft && newPos_x + this.type.radius < g_screenBoundRight) 
+        if (newPos_x - this.type.radius > g_screenBoundLeft + center_x && newPos_x + this.type.radius < g_screenBoundRight + center_x) 
             this.x = newPos_x;
-        if (newPos_y - this.type.radius > g_screenBoundTop && newPos_y + this.type.radius < g_screenBoundBottom) 
+        if (newPos_y - this.type.radius > g_screenBoundTop + center_y && newPos_y + this.type.radius < g_screenBoundBottom + center_y) 
             this.y = newPos_y;
     }
     
-    this.display = (ctx) => {
+    this.display = function(ctx) {
         
         let show_x = this.x + g_camera.x;
         let show_y = this.y + g_camera.y;
@@ -151,9 +204,9 @@ function EnemyObject(type=null, x=0, y=0) {
         
         let dx, dy;
         if (this.state === "idle") {
-            [dx, dy] = normalize([g_player.x - this.x, g_player.y - this.y]);
+            [dx, dy] = MathHelper.normalize([g_player.x - this.x, g_player.y - this.y]);
         } else {
-            [dx, dy] = normalize([this.vx, this.vy]);
+            [dx, dy] = MathHelper.normalize([this.vx, this.vy]);
         }
         dx *= this.type.radius * 0.707;
         dy *= this.type.radius * 0.707;
@@ -163,26 +216,35 @@ function EnemyObject(type=null, x=0, y=0) {
     }
 }
 
-function EnemyType(name, behaviors=[], maxHealth=100, radius, color) {
+function EnemyType(name, behaviors=[], moveBehavior, attackBehavior, maxHealth=100, radius, color) {
     this.name = name;
     this.behaviors = behaviors;
     this.maxHealth = maxHealth;
     this.radius = radius * G_PREFERED_SCALAR;
     this.color = color;
     this.grounded; // if not grounded will allow player to knock them back
+    this.moveBehavior = moveBehavior;
+    this.attackBehavior = attackBehavior;
 }
 
 function spawnEnemy(typeCopy, x, y, isBoss=false) {
     let enemyInstanceID = g_enemyInstanceIDs++;
-    let enemy = new EnemyObject(typeCopy, x, y);
+    let enemy = new EnemyObject(typeCopy, x, y, enemyInstanceID);
+    
     enemy.health = typeCopy.maxHealth;
     if (isBoss) {
-        g_boss_ptr = enemy;
+        g_bosses.push(enemy);
         enemy.isBoss = true;
     }
-    g_enemyInstances[enemyInstanceID] = enemy;
+    
+    g_enemyInstances.push(enemy);
+    
     for (let behavior of enemy.type.behaviors) {
-        let executableMethod = behavior.type == "firePattern" ? createFirePatternMethod(behavior, enemy) : createMoveEnemyMethod(behavior, enemy);
-        g_timeline.push(new Event(g_currentTime + behavior.timestamp * g_invTimeDialation, executableMethod));
+        if (!enemy.attacks[behavior.index]) enemy.attacks[behavior.index] = [];
+        enemy.attacks[behavior.index] = enemy.attacks[behavior.index].concat(behavior.behaviorList);
     }
+    
+    createMoveEnemyMethod(enemy.type.moveBehavior, enemy)();
+    
+    createAttackEnemyMethod(enemy.type.attackBehavior, enemy)();
 }
