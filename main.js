@@ -14,21 +14,21 @@ function start() {
     //addEventListener("contextmenu", (e) => {e.preventDefault();});
     
     
-    font1.load().then(function(){
+    font1.load().then(function () {
         console.log('VCR OSD Mono is available');
         let font2 = new FontFaceObserver('BroshK');
-        font2.load().then(function(){
+        font2.load().then(function () {
             requestAnimationFrame(setInitialTime);
-        }, function(){
+        }, function() {
             console.log('BroshK is not available');
             requestAnimationFrame(setInitialTime);
         });
-    }, function(){
+    }, function () {
         console.log('Atleast VCR OSD Mono is not available');
         let font2 = new FontFaceObserver('BroshK');
-        font2.load().then(function(){
+        font2.load().then(function () {
             requestAnimationFrame(setInitialTime);
-        }, function(){
+        }, function () {
             console.log('BroshK is not available');
             requestAnimationFrame(setInitialTime);
         });
@@ -87,11 +87,21 @@ function tick(p_currentTime) {
         
         g_buttonsList.push(new Button(g_screenWidth*0.5, g_screenHeight*0.6, "OPTIONS",
             function settings() {
-                //g_buttonsList = [];
+                g_buttonsList = [];
                 
-                //resetGame(g_currentTime);
+                g_buttonsList.push(new Button(g_screenWidth*0.5, g_screenHeight*0.6, "BACK",
+                    function back() {
+                        g_buttonsList = [];
+                        g_gameWindow = -1;
+                        requestAnimationFrame(tick);
+                        return;
+                    },
+                    1
+                ));
                 
-                //g_gameWindow = "mainMenuOptions";
+                // timer 
+                
+                g_gameWindow = "mainMenuOptions";
             },
             1
         ));
@@ -141,10 +151,13 @@ function tick(p_currentTime) {
         // level 1
     }
     if (g_gameWindow == "mainMenuOptions") {
-        
+        ctx.fillStyle = Color.BLACK;
+        ctx.fillRect(0, 0, g_screenWidth, g_screenHeight);
+        ButtonHelper.drawButtons(p_currentTime);
     }
     if (g_gameWindow == "quit") {
         console.log("We are sad to see you go...");
+        bgm.title.pause();
         return;
     }
     if (g_gameWindow == 1) { // main game
@@ -404,6 +417,7 @@ function updateObjects(deltaTime) {
             enemy.health = newHealth
             enemy.vx += g_player.laser.dx * deltaTime * 0.0001;
             enemy.vy += g_player.laser.dy * deltaTime * 0.0001;
+            g_bloodSplatters.push(new Blood(g_currentTime, g_player.laser.origin_x + g_player.laser.dx, g_player.laser.origin_y + g_player.laser.dy, g_player.selectedWeapon));
         }
         g_player.laser.hitEnemies = [];
         ctx.shadowColor = g_player.laser.type.color;
@@ -421,8 +435,10 @@ function updateObjects(deltaTime) {
             let newHealth = Math.max(0, enemy.health - hitscan.type.damage);
             g_stats.damageDealt += enemy.health - newHealth;
             enemy.health = newHealth
-            enemy.vx += hitscan.dx * 0.03;
-            enemy.vy += hitscan.dy * 0.03;
+            let [n_x, n_y] = MathHelper.setMagnitude(0.03, [hitscan.dx, hitscan.dy]);
+            enemy.vx += n_x;
+            enemy.vy += n_y;
+            g_bloodSplatters.push(new Blood(g_currentTime, hitscan.origin_x + hitscan.dx, hitscan.origin_y + hitscan.dy, g_player.selectedWeapon));
         }
         if (hitscan.type.fade) {
             g_playerFadinHitscans.push(hitscan);
@@ -477,7 +493,7 @@ function updateObjects(deltaTime) {
         let blood = g_bloodSplatters[i];
         
         if (
-            blood.spawnTime + G_BLOOD_LIFESPAN < g_currentTime
+            blood.spawnTime + G_BLOOD_DURATION < g_currentTime
             || blood.heal()
         ) {
             g_bloodSplatters.remove(i);
@@ -551,6 +567,7 @@ function updateObjects(deltaTime) {
                             let newHealth = Math.max(0, enemy.health - playerBullet.type.damage);
                             g_stats.damageDealt += enemy.health - newHealth;
                             enemy.health = newHealth
+                            g_bloodSplatters.push(new Blood(g_currentTime, playerBullet.x, playerBullet.y, g_player.selectedWeapon));
                         }
                         enemy.vx += playerBullet.vx * 0.0001;
                         enemy.vy += playerBullet.vy * 0.0001;
@@ -573,6 +590,8 @@ function updateObjects(deltaTime) {
                         enemy.vx += playerBullet.vx * 0.004;
                         enemy.vy += playerBullet.vy * 0.004;
                         hitEnemy = true;
+                        g_bloodSplatters.push(new Blood(g_currentTime, playerBullet.x, playerBullet.y, g_player.selectedWeapon));
+                        g_bloodSplatters.push(new Blood(g_currentTime, playerBullet.x, playerBullet.y, g_player.selectedWeapon));
                     }
                 }
                 if (hitEnemy) {
@@ -584,10 +603,10 @@ function updateObjects(deltaTime) {
         } else if (g_player.laser.type.width > 0 && g_player.laser.distanceSquared(playerBullet.parent.x + playerBullet.x, playerBullet.parent.y + playerBullet.y) < 5 * 5) {
             let newHealth = Math.max(0, playerBullet.parent.health - playerBullet.type.damage*0.6);
             g_stats.damageDealt += playerBullet.parent.health - newHealth;
-            playerBullet.parent.health = newHealth
+            playerBullet.parent.health = newHealth;
             playerBullet.parent.vx -= playerBullet.x / playerBullet.parent.type.radius * 0.002;
             playerBullet.parent.vy -= playerBullet.y / playerBullet.parent.type.radius * 0.002;
-            
+            g_bloodSplatters.push(new Blood(g_currentTime, playerBullet.x, playerBullet.y, g_player.selectedWeapon));
             g_playerBulletInstances.remove(i);
             continue;
         }
