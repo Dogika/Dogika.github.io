@@ -133,6 +133,11 @@ let g_camera = {
     shakeEnergy: 0
 }
 
+let g_settings = {
+    timer: false,
+    leftHandedModed: false
+}
+
 let g_player = {};
 
 let g_unlocks = {};
