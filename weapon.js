@@ -1,7 +1,10 @@
-function Weapon(name, firerate, useFunction, defaultWeapon=false) {
+function Weapon(name, firerate, healing, useFunction, defaultWeapon=false) {
     this.name = name;
     this.firerate = firerate;
     this.lastUsed = -1; //timestamp
+    this.healing = healing;
+    this.radius = G_BLOOD_MAX_RADIUS;
+    
     g_unlocks[name] = defaultWeapon;
     
     this.use = useFunction;
