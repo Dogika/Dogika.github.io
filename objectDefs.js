@@ -1,7 +1,7 @@
-const G_BULLET_NAILGUN = new PlayerBulletType(15, 1.3, "triangle", 2, Color.WHITE, true, true, true, 2000, true, true, 8, 11, Color.CYAN);
-const G_BULLET_SHOTGUN = new PlayerBulletType(110, 6, "circle", 1, Color.ORANGE, false, true, false, undefined, undefined, undefined, 10, 12, Color.ORANGE);
+const G_BULLET_NAILGUN = new PlayerBulletType(10, 1.3, "triangle", 2, Color.WHITE, true, true, true, 2000, true, true, 8, 11, Color.CYAN);
+const G_BULLET_SHOTGUN = new PlayerBulletType(100, 6, "circle", 1, Color.ORANGE, false, true, false, undefined, undefined, undefined, 10, 12, Color.ORANGE);
 
-let g_weaponPistol = new Weapon("pistol", 490, function() {
+let g_weaponPistol = new Weapon("pistol", 490, 1, function() {
     playSound(soundEffects.revolverShoot, g_volumeSound)
     
     g_weaponPistol.lastUsed = g_currentTime;
@@ -9,7 +9,7 @@ let g_weaponPistol = new Weapon("pistol", 490, function() {
     createPlayerHitscan(G_HITSCAN_BULLET, 0, 0);
 });
 
-let g_weaponNailgun = new Weapon("nailgun", 40, function() {
+let g_weaponNailgun = new Weapon("nailgun", 40, 1, function() {
     if (soundEffects.nailgunSpin.paused) 
         soundEffects.nailgunSpin.play();
     soundEffects.nailgunSpin.volume = 0.4*g_volumeSound;
@@ -39,7 +39,7 @@ let g_weaponNailgun = new Weapon("nailgun", 40, function() {
     WeaponHelper.fireShots(G_BULLET_NAILGUN, pos_x, pos_y, direction_x, direction_y, 1, spreadAngle, minSpeed, maxSpeed);
 });
 
-let g_weaponLaser = new Weapon("laser", null, function() {
+let g_weaponLaser = new Weapon("laser", null, 0.4, function() {
     g_weaponLaser.lastUsed = g_currentTime;
     
     g_player.laser.type.width = G_HITSCAN_LASER.width;
@@ -53,7 +53,7 @@ let g_weaponLaser = new Weapon("laser", null, function() {
     setPlayerHitscan(g_player.laser, eyePos_x, eyePos_y);
 });
 
-let g_weaponShotgun = new Weapon("shotgun", 920, function() {
+let g_weaponShotgun = new Weapon("shotgun", 920, 0.08, function() {
     
     playSound(soundEffects.shotgunFire, 0.5*g_volumeSound);
     
@@ -72,9 +72,16 @@ let g_weaponShotgun = new Weapon("shotgun", 920, function() {
     WeaponHelper.fireShots(G_BULLET_SHOTGUN, pos_x, pos_y, direction_x, direction_y, 7, spreadAngle, 0.675);
 });
 
+const g_weaponList = {
+    "pistol": g_weaponPistol,
+    "nailgun": g_weaponNailgun,
+    "laser": g_weaponLaser,
+    "shotgun": g_weaponShotgun
+}
+
 const G_HITSCAN_LASER = new HitscanType(0.4, 5, Color.RED);
 
-const G_HITSCAN_BULLET = new HitscanType(200, 3.6, Color.YELLOW, true); // has fade instead of insta disappearing
+const G_HITSCAN_BULLET = new HitscanType(150, 3.6, Color.YELLOW, true); // has fade instead of insta disappearing
 
 const PATTERN_1 = new Pattern(
     new BulletType([new BulletBehavior(0,    0.05,     0,  0, 0),
