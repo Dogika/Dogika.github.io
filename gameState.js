@@ -94,14 +94,23 @@ let g_keyboard = {
     l: false,
     ";": false,
     "'": false
-}; 
+};
 let g_trigger = {};
 
-let bgm = {
-    outOfCombat: new Audio('https://raw.githubusercontent.com/Dogika/compsci-contest-2025/refs/heads/main/0-1 Clean.wav'),
-    inCombat: new Audio('https://raw.githubusercontent.com/Dogika/compsci-contest-2025/refs/heads/main/0-1.wav'),
-    title: new Audio('https://raw.githubusercontent.com/Dogika/compsci-contest-2025/refs/heads/main/ezyZip.mp3')
-}
+let g_bgm = {
+    outOfCombat: new Howl({
+        src: ['https://raw.githubusercontent.com/Dogika/compsci-contest-2025/refs/heads/main/0-1 Clean.wav'],
+        loop: true
+    }),
+    inCombat: new Howl({
+        src: ['https://raw.githubusercontent.com/Dogika/compsci-contest-2025/refs/heads/main/0-1.wav'],
+        loop: true
+    }),
+    title: new Howl({
+        src: ['https://raw.githubusercontent.com/Dogika/compsci-contest-2025/refs/heads/main/ezyZip.mp3'],
+        loop: true
+    })
+};
 
 let soundEffects = {
     revolverShoot: new Audio('https://raw.githubusercontent.com/Dogika/compsci-contest-2025/refs/heads/main/Shoot1.wav'),
@@ -109,7 +118,11 @@ let soundEffects = {
     nailgunFire: new Audio('https://raw.githubusercontent.com/Dogika/compsci-contest-2025/refs/heads/main/MachineGun2.wav'),
     shotgunFire: new Audio('https://raw.githubusercontent.com/Dogika/compsci-contest-2025/refs/heads/main/Steampunk%20Weapons%20-%20Shotgun%202%20-%20Shot%20-%2001.wav'),
     dash: new Audio('https://raw.githubusercontent.com/Dogika/compsci-contest-2025/refs/heads/main/Dodge3.wav'),
-    step: new Audio('https://raw.githubusercontent.com/Dogika/compsci-contest-2025/refs/heads/main/footstep_heavy1.wav')
+    step: new Audio('https://raw.githubusercontent.com/Dogika/compsci-contest-2025/refs/heads/main/footstep_heavy1.wav'),
+    hit: new Audio('https://raw.githubusercontent.com/Dogika/compsci-contest-2025/refs/heads/main/punch_grit_wet_impact_05.wav'),
+    hurt: new Audio('https://raw.githubusercontent.com/Dogika/compsci-contest-2025/refs/heads/main/Terraria%20Male%20Damage%20Sound%20Effect.wav'),
+    explosion: new Audio('https://raw.githubusercontent.com/Dogika/compsci-contest-2025/refs/heads/main/ThatExplosionSound.wav'),
+    pickup: new Audio('https://raw.githubusercontent.com/Dogika/compsci-contest-2025/refs/heads/main/ipucss.wav')
 }
 
 let g_volumeTotal = 0.5;
@@ -147,6 +160,7 @@ let g_buttonsList = [];
 let g_inCombat = false;
 
 function setTimeDialation(newTimeDialation) {
+    return; // no
     g_timeDialation = newTimeDialation;
     g_invTimeDialation = 1/newTimeDialation;
     bgm.outOfCombat.playbackRate = newTimeDialation;
@@ -155,15 +169,11 @@ function setTimeDialation(newTimeDialation) {
 
 function resetGame() {
     
-    bgm.outOfCombat.volume = g_volumeMusic;
-    bgm.outOfCombat.currentTime = 0;
-    bgm.outOfCombat.loop = true;
-    bgm.outOfCombat.playbackRate = g_timeDialation;
-                
-    bgm.inCombat.volume = 0;
-    bgm.inCombat.currentTime = 0;
-    bgm.inCombat.loop = true;
-    bgm.inCombat.playbackRate = g_timeDialation;
+    g_bgm.outOfCombat.volume(g_volumeMusic);
+    g_bgm.inCombat.volume(0);
+    
+    g_bgm.outOfCombat.seek(0);
+    g_bgm.inCombat.seek(0);
     
     playSound(soundEffects.step, 0);
     soundEffects.step.playbackRate = 2;
@@ -177,6 +187,10 @@ function resetGame() {
     g_currentRoom = g_currentLevel[newRoom_j][newRoom_i];
     g_screenCenterFocus_x = newRoom_i * g_screenWidth;
     g_screenCenterFocus_y = newRoom_j * g_screenHeight;
+    
+    g_paragraph.align = "left";
+    g_paragraph.x = g_screenWidth*0.1;
+    g_paragraph.y = g_screenHeight*0.25;
     
     g_nextEvent_ptr = undefined;
     g_timeline = [];
@@ -192,8 +206,6 @@ function resetGame() {
     g_player.room_i = newRoom_i;
     g_player.room_j = newRoom_j;
     g_boss_ptr = undefined;
-    resetStats();
-    //g_nextEvent_ptr = g_timeline.remove(0);
     
     for (let i = 0; i < g_currentLevel.length; i++)
     for (let j = 0; j < g_currentLevel[0].length; j++) {
