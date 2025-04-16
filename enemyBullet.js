@@ -2,8 +2,8 @@ function BulletObject(bulletType=null, x=0, y=0, dx=0, dy=0, speedCoefficient=1,
     this.type = bulletType;
     this.x = x;
     this.y = y;
-    this.vx = dx * speedCoefficient;
-    this.vy = dy * speedCoefficient;
+    this.vx = 0;
+    this.vy = 0;
     this.dx = dx;
     this.dy = dy;
     this.rx = 1;
@@ -71,6 +71,15 @@ function BulletType(behaviors=[], damage=1, radius=5, shape="circle", minSpeed=0
         return;
     }
     this.color = color;
+}
+
+function BulletBehavior(timestamp, forwardSpeed, forwardAccel, rotationSpeed, rotationOffset, targetPlayer=false) {
+    this.timestamp = timestamp;
+    this.forwardSpeed = forwardSpeed;
+    this.forwardAccel = forwardAccel;
+    this.rotationSpeed = rotationSpeed; // pos: ccw, neg: cw
+    this.rotationOffset = rotationOffset; // initial offset when executed; after delay
+    this.targetPlayer = targetPlayer;
 }
 
 function spawnBullet(bulletTypeCopy, x=0, y=0, angle=0, offset=0, patternInstanceID=0, speedCoefficient=1, showTimestamp=0, loopColorID=null, patternTowardsPlayer) {
