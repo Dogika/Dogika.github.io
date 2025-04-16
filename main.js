@@ -64,8 +64,7 @@ function tick(p_currentTime) {
             g_buttonsList.push(new Button(g_screenWidth*0.5, g_screenHeight*0.5, "RESUME",
                 function resume(p_currentTime) {
                     g_buttonsList = [];
-                    bgm.title.pause();
-                    console.log(g_player);
+                    g_bgm.title.pause();
                     g_pauseDifference = g_currentTime - g_pauseStart;
                     g_paused = false;
                     g_gameWindow++; // g_gameWindow = "levelSelect";
@@ -76,7 +75,7 @@ function tick(p_currentTime) {
             g_buttonsList.push(new Button(g_screenWidth*0.5, g_screenHeight*0.5, "PLAY",
                 function play() {
                     g_buttonsList = [];
-                    bgm.title.pause();
+                    g_bgm.title.pause();
                     resetGame(g_currentTime);
                     
                     g_gameWindow++; // g_gameWindow = "levelSelect";
@@ -113,12 +112,19 @@ function tick(p_currentTime) {
             1
         ));
         
+        g_buttonsList.push(new Button(g_screenWidth*0.5, g_screenHeight*0.1, "UPDATE BTW",
+            function hehe() {
+                playSound(soundEffects.explosion, g_volumeSound);
+            },
+            0.7
+        ));
+        
         g_gameWindow++;
     }
     if (g_gameWindow == 0) { // menu
-        if (bgm.title.paused) {
-            bgm.title.play();
-            bgm.title.loop = true;
+        if (!g_bgm.title.playing()) {
+            g_bgm.title.volume(0.25);
+            g_bgm.title.play();
         }
         ctx.fillStyle = Color.BLACK;
         ctx.fillRect(0, 0, g_screenWidth, g_screenHeight);
@@ -157,7 +163,7 @@ function tick(p_currentTime) {
     }
     if (g_gameWindow == "quit") {
         console.log("We are sad to see you go...");
-        bgm.title.pause();
+        g_bgm.title.pause();
         return;
     }
     if (g_gameWindow == 1) { // main game
@@ -239,8 +245,8 @@ function tick(p_currentTime) {
         }
         
         if (getControl("quit")) {
-            bgm.outOfCombat.pause();
-            bgm.inCombat.pause();
+            g_bgm.outOfCombat.pause();
+            g_bgm.inCombat.pause();
             g_playerFadinHitscans = [];
             
             g_gameWindow= -1;
@@ -249,8 +255,8 @@ function tick(p_currentTime) {
         if (getControl("pause")) {
             g_paused = true;
             g_pauseStart = p_currentTime;
-            bgm.outOfCombat.pause();
-            bgm.inCombat.pause();
+            g_bgm.outOfCombat.pause();
+            g_bgm.inCombat.pause();
             g_playerFadinHitscans = [];
             
             g_gameWindow= -1;
@@ -313,14 +319,13 @@ function tick(p_currentTime) {
                 g_mouse.down = false;
             }
             
-            bgm.outOfCombat.pause();
-            bgm.inCombat.pause();
+            g_bgm.outOfCombat.pause();
+            g_bgm.inCombat.pause();
             
             g_buttonsList.push(new Button(g_screenWidth*0.5, g_screenHeight*0.44, "AGAIN?", 
                 function playAgain() {
                     g_gameLost = false;
                     g_buttonsList = [];
-                    g_unlocks= {};
                     
                     resetGame(g_currentTime);
                     g_gameWindow = 1;
@@ -343,6 +348,61 @@ function tick(p_currentTime) {
         ctx.fillStyle = Color.BLACK;
         ctx.fillRect(0, 0, g_screenWidth, g_screenHeight);
         
+        ButtonHelper.drawButtons(p_currentTime);
+    }
+    if (g_gameWindow === "levelResultsSetup") {
+        g_paragraph.textObjects = [];
+        g_timeline = [];
+        g_nextEvent_ptr = null;
+        g_paragraph.align = "left";
+        g_paragraph.x = g_screenWidth*0.1;
+        g_paragraph.y = g_screenHeight*0.25;
+        
+        g_timeline.push(new Event(g_currentTime, function() {
+            g_paragraph.textObjects.push(new TypedText("Damage Dealt: "+Math.floor(g_stats.damageDealt).toString().padStart(14, ' '), 0, 30));
+        }));
+        g_timeline.push(new Event(g_currentTime+1500, function() {
+            g_paragraph.textObjects.push(new TypedText("Dodge Frames: "+Math.floor(g_stats.iTimeUsed).toString().padStart(14, ' '), 0, 30));
+        }));
+        g_timeline.push(new Event(g_currentTime+3000, function() {
+            g_paragraph.textObjects.push(new TypedText("Enemies Killed: "+Math.floor(g_stats.enemiesKilled).toString().padStart(12, ' '), 0, 30));
+        }));
+        g_timeline.push(new Event(g_currentTime+4500, function() {
+            g_paragraph.textObjects.push(new TypedText("Final Score: "+"S".padStart(15, ' '), 0, 30));
+        }));
+        
+        g_timeline.push(new Event(g_currentTime+4500+840, function() {
+            g_buttonsList.push(new Button(g_screenWidth*0.5, g_screenHeight*0.6, "NEXT LEVEL", 
+                function nextLevel() {
+                    return; // not now
+                    g_buttonsList = [];
+                    
+                    resetGame(g_currentTime);
+                    g_gameWindow = 1;
+                }
+            ));
+            
+            g_buttonsList.push(new Button(g_screenWidth*0.5, g_screenHeight*0.7, "BACK TO MAIN MENU", 
+                function menu() {
+                }
+            ));
+        }));
+        
+        g_gameWindow = "levelResults";
+    }
+    if (g_gameWindow === "levelResults") {
+        if (!g_nextEvent_ptr) {
+            g_nextEvent_ptr = g_timeline.remove(0);
+        }
+        while (g_nextEvent_ptr != undefined && g_currentTime > g_nextEvent_ptr.timestamp) {
+            g_nextEvent_ptr.executableMethod();
+            g_timeline.sort(function(a, b){return a.timestamp - b.timestamp});
+            g_nextEvent_ptr = g_timeline.remove(0);
+        }
+        ctx.fillStyle = Color.BLACK;
+        ctx.fillRect(0, 0, g_screenWidth, g_screenHeight);
+        g_paragraph.update(p_currentTime);
+        g_paragraph.display();
         ButtonHelper.drawButtons(p_currentTime);
     }
     
@@ -391,11 +451,13 @@ function updateObjects(deltaTime) {
     g_player.stamina = Math.min(G_MAX_STAMINA, g_player.stamina += deltaTime*G_STAMINA_REGEN);
     if (g_player.health <= 0) {
         g_gameLost = true;
+        playSound(soundEffects.explosion, g_volumeSound);
         return;
     }
     if (g_currentRoom.collisionDamage && g_currentRoom.collisionDamage(g_player.x, g_player.y)) {
         let newHealth = Math.max(0, g_player.health - G_COLLISION_DAMAGE);
         g_stats.damageTaken += g_player.health - newHealth;
+        playSound(soundEffects.hurt, 1.5*g_volumeSound);
         g_player.health = newHealth;
     }
     
@@ -417,6 +479,7 @@ function updateObjects(deltaTime) {
             enemy.health = newHealth
             enemy.vx += g_player.laser.dx * deltaTime * 0.0001;
             enemy.vy += g_player.laser.dy * deltaTime * 0.0001;
+            playSound(soundEffects.hit, 0.5*g_volumeSound);
             g_bloodSplatters.push(new Blood(g_currentTime, g_player.laser.origin_x + g_player.laser.dx, g_player.laser.origin_y + g_player.laser.dy, g_player.selectedWeapon));
         }
         g_player.laser.hitEnemies = [];
@@ -438,6 +501,7 @@ function updateObjects(deltaTime) {
             let [n_x, n_y] = MathHelper.setMagnitude(0.03, [hitscan.dx, hitscan.dy]);
             enemy.vx += n_x;
             enemy.vy += n_y;
+            playSound(soundEffects.hit, 0.5*g_volumeSound);
             g_bloodSplatters.push(new Blood(g_currentTime, hitscan.origin_x + hitscan.dx, hitscan.origin_y + hitscan.dy, g_player.selectedWeapon));
         }
         if (hitscan.type.fade) {
@@ -494,7 +558,7 @@ function updateObjects(deltaTime) {
         
         if (
             blood.spawnTime + G_BLOOD_DURATION < g_currentTime
-            || blood.heal()
+            || blood.heal(deltaTime)
         ) {
             g_bloodSplatters.remove(i);
             continue;
@@ -567,6 +631,7 @@ function updateObjects(deltaTime) {
                             let newHealth = Math.max(0, enemy.health - playerBullet.type.damage);
                             g_stats.damageDealt += enemy.health - newHealth;
                             enemy.health = newHealth
+                            playSound(soundEffects.hit, 0.5*g_volumeSound);
                             g_bloodSplatters.push(new Blood(g_currentTime, playerBullet.x, playerBullet.y, g_player.selectedWeapon));
                         }
                         enemy.vx += playerBullet.vx * 0.0001;
@@ -590,6 +655,7 @@ function updateObjects(deltaTime) {
                         enemy.vx += playerBullet.vx * 0.004;
                         enemy.vy += playerBullet.vy * 0.004;
                         hitEnemy = true;
+                        playSound(soundEffects.hit, 0.5*g_volumeSound);
                         g_bloodSplatters.push(new Blood(g_currentTime, playerBullet.x, playerBullet.y, g_player.selectedWeapon));
                         g_bloodSplatters.push(new Blood(g_currentTime, playerBullet.x, playerBullet.y, g_player.selectedWeapon));
                     }
@@ -626,10 +692,6 @@ function updateObjects(deltaTime) {
         
         if (enemy.health <= 0) {
             if (enemy.isBoss) {
-                g_timeline = [];
-                g_nextEvent_ptr = null;
-                g_patternInstanceIDs = 0;
-                g_patternInstances = [];
                 enemy.x = 10000;
                 enemy.y = 10000;
                 for (let j = 0; j < g_bosses.length; j++) {
@@ -639,6 +701,7 @@ function updateObjects(deltaTime) {
                     }
                 }
             }
+            playSound(soundEffects.explosion, g_volumeSound);
             g_enemyInstances.remove(i);
             g_stats.enemiesKilled++;
             continue;
@@ -654,13 +717,13 @@ function updateObjects(deltaTime) {
     }
     
     if (g_enemyInstances.length > 0) {
-        if (bgm.inCombat.volume === 0) {
-            bgm.inCombat.volume = g_volumeMusic;
-            bgm.outOfCombat.volume = 0;
+        if (g_bgm.inCombat.volume() === 0) {
+            g_bgm.inCombat.volume(g_volumeMusic);
+            g_bgm.outOfCombat.volume(0);
         }
-    } else if (bgm.outOfCombat.volume === 0) {
-        bgm.inCombat.volume = 0;
-        bgm.outOfCombat.volume = g_volumeMusic;
+    } else if (g_bgm.outOfCombat.volume() === 0) {
+        g_bgm.inCombat.volume(0);
+        g_bgm.outOfCombat.volume(g_volumeMusic);
     }
     
     i = 0;
@@ -676,7 +739,7 @@ function updateObjects(deltaTime) {
     ctx.globalAlpha = 1;
     
     let currentPlayerSpeed = Math.hypot(g_player.vx, g_player.vy);
-    let tooFastForCollisions = currentPlayerSpeed > G_PLAYER_BASE_SPEED+0.0001;
+    let tooFastForCollisions = currentPlayerSpeed > G_PLAYER_BASE_SPEED+0.00001;
     
     for (let patternInstance of g_patternInstances) {
         let i = 0;
@@ -685,11 +748,12 @@ function updateObjects(deltaTime) {
             
             let dx = bullet.x - g_player.x;
             let dy = bullet.y - g_player.y;
-            if (bullet.visible && g_collide && dx * dx + dy * dy < bullet.type.radius+10 * bullet.type.radius+10) {
+            if (bullet.visible && g_collide && dx * dx + dy * dy < bullet.type.radius * bullet.type.radius) {
                 if (!tooFastForCollisions) {
                     let newHealth = Math.max(0, g_player.health - bullet.type.damage);
                     g_stats.damageTaken += g_player.health - newHealth;
                     g_player.health = newHealth;
+                    playSound(soundEffects.hurt, 1.5*g_volumeSound);
                     patternInstance.remove(i);
                     continue;
                 } else {
