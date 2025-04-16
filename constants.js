@@ -31,7 +31,7 @@ const G_MAGNET_LIFE = 5000;
 const G_PUNCH_DURATION = 100;
 
 const G_BLOOD_DURATION = 600;
-const G_BLOOD_MAX_RADIUS = 55;
+const G_BLOOD_MAX_RADIUS = 65;
 
 const g_screenWidth = window.innerHeight*0.95;
 const g_screenHeight = window.innerHeight*0.95;
