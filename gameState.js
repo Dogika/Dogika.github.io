@@ -44,7 +44,6 @@ let g_screenShakeInstances = [];
 let g_loopColors = [];
 let g_loopColorIDs = 0;
 
-let g_listeners; // Listener[];
 let g_timeline; // Event[]
 let g_nextEvent_ptr;
 let g_previousTime = 0;
