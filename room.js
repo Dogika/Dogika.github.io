@@ -14,7 +14,7 @@ function RoomInstance(i, j, type, wallFunction, damageFunction, displayFunction,
     this.finished = false;
     this.doors = doors;
     
-    this.collisionWall = wallFunction; // returns [x, y]
+    this.collisionWall = wallFunction;
     this.collisionDamage = damageFunction;
     this.display = displayFunction;
     this.play = playFunction;
@@ -27,6 +27,7 @@ function RoomInstance(i, j, type, wallFunction, damageFunction, displayFunction,
         this.enemiesKilledPreviously = 0;
         this.allEnemiesKilled = true;
         this.played = false;
+        RoomHelper.resetDoors(this, "all");
     }
     
     this.baseCollisions = function(prev_x, prev_y, new_x, new_y, r=0) {
@@ -49,7 +50,7 @@ function RoomInstance(i, j, type, wallFunction, damageFunction, displayFunction,
         for (let i = 0; i < this.doors.length; i++) {
             let door = this.doors[i];
             
-            if (!door.open) continue;
+            if (door.state == "closed") continue;
             
             let inDoor, outDoor;
             
@@ -132,6 +133,10 @@ function RoomInstance(i, j, type, wallFunction, damageFunction, displayFunction,
         
         if (g_stats.enemiesKilled - this.waves[this.currentWave].length >= this.enemiesKilledPreviously) {
             this.allEnemiesKilled = true;
+            g_timeline = [];
+            g_nextEvent_ptr = null;
+            g_patternInstanceIDs = 0;
+            g_patternInstances = [];
             this.currentWave++;
         }
     }
@@ -144,27 +149,40 @@ class RoomHelper {
     
     static openDoors(room, which) {
         if (which === "all") {
-            for (let i = 0; i < room.doors; i++) {
-                room.doors[i].open = true;
+            for (let i = 0; i < room.doors.length; i++) {
+                room.doors[i].state = "open";
             }
             return;
         }
         
         for (let i = 0; i < which.length; i++) {
-            room.doors[which[i]].open = true;
+            room.doors[which[i]].state = "open";
         }
     }
     
     static closeDoors(room, which) {
         if (which === "all") {
-            for (let i = 0; i < room.doors; i++) {
-                room.doors[i].open = false;
+            for (let i = 0; i < room.doors.length; i++) {
+                room.doors[i].state = "closed";
             }
             return;
         }
         
         for (let i = 0; i < which.length; i++) {
-            room.doors[which[i]].open = false;
+            room.doors[which[i]].state = "closed";
+        }
+    }
+    
+    static resetDoors(room, which) {
+        if (which === "all") {
+            for (let i = 0; i < room.doors.length; i++) {
+                room.doors[i].state = room.doors[i].defaultState;
+            }
+            return;
+        }
+        
+        for (let i = 0; i < which.length; i++) {
+            room.doors[which[i]].state = room.doors[which[i]].defaultState;
         }
     }
 }
