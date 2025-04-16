@@ -188,9 +188,9 @@ function resetGame() {
     g_screenCenterFocus_x = newRoom_i * g_screenWidth;
     g_screenCenterFocus_y = newRoom_j * g_screenHeight;
     
-    g_paragraph.align = "left";
-    g_paragraph.x = g_screenWidth*0.1;
-    g_paragraph.y = g_screenHeight*0.25;
+    g_paragraph.align = "center";
+    g_paragraph.x = g_screenWidth*0.5;
+    g_paragraph.y = g_screenHeight*0.7;
     
     g_nextEvent_ptr = undefined;
     g_timeline = [];
