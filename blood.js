@@ -5,7 +5,7 @@ function Blood(spawnTime, x, y, weaponName) {
     this.spawnTime = spawnTime;
     this.sizeFactor = (Math.random() - 0.5) * 20;
     
-    this.heal = function() {
+    this.heal = function(deltaTime) {
         let dx = g_player.x - this.x;
         let dy = g_player.y - this.y;
         
@@ -14,12 +14,11 @@ function Blood(spawnTime, x, y, weaponName) {
         
         g_player.health = Math.min(
             G_PLAYER_MAX_HEALTH, 
-            g_player.health + this.weapon.healing
+            g_player.health + this.weapon.healing * deltaTime * 0.4
         );
     }
     
     this.display = function() {
-        console.log(this.sizeFactor);
         drawCircle(ctx, this.x + g_camera.x, this.y + g_camera.y,  Math.max(0, this.sizeFactor + G_BLOOD_MAX_RADIUS * (1 - (g_currentTime-this.spawnTime)/G_BLOOD_DURATION)), Color.RED, 0.4);
     }
 }
