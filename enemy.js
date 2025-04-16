@@ -18,14 +18,17 @@ function EnemyObject(type=null, x=0, y=0, ID=-1) {
         if (this.state !== "idle" || !this.attacks) return;
         
         if (this.attackType === "loop") {
-            if (this.attackIndex === this.attacks.length) {
+            if (this.attackIndex >= this.attacks.length) {
                 this.attackIndex = 0;
                 this.patternsFired = 0;
+                this.attacked = false;
             }
             
             if (this.attacked && this.patternsFired !== this.attacks[this.attackIndex].length) return;
             
-            this.deployPattern(this.attackIndex + 1);
+            this.deployPattern(this.attackIndex);
+            
+            this.attackIndex++;
         } else if (this.attackType === "distanceBased") {
             if (this.attacked && this.patternsFired !== this.attacks[this.attackIndex].length) return;
             
@@ -42,7 +45,9 @@ function EnemyObject(type=null, x=0, y=0, ID=-1) {
         } else if (this.attackType === "random") {
             if (this.attacked && this.patternsFired !== this.attacks[this.attackIndex].length) return;
             
-            this.deployPattern(Math.floor(Math.random() * this.attacks.length));
+            let randomIndex = Math.floor(Math.random() * this.attacks.length);
+            
+            this.deployPattern(randomIndex);
         }
     }
     
@@ -50,8 +55,6 @@ function EnemyObject(type=null, x=0, y=0, ID=-1) {
         this.patternsFired = 0;
         this.attackIndex = attackIndex;
         this.attacked = true;
-        console.log(attackIndex);
-        console.log(this.attacks);
         for (let i = 0; i < this.attacks[this.attackIndex].length; i++) {
             let behavior = this.attacks[this.attackIndex][i];
             g_timeline.push(new Event(
