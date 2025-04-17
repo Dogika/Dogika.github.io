@@ -1,4 +1,4 @@
-const G_BULLET_NAILGUN = new PlayerBulletType(17, 1.3, "triangle", 2, Color.WHITE, true, true, true, 2000, true, true, 8, 11, Color.CYAN);
+const G_BULLET_NAILGUN = new PlayerBulletType(13, 1.3, "triangle", 2, Color.WHITE, true, true, true, 2000, true, true, 8, 11, Color.CYAN);
 const G_BULLET_SHOTGUN = new PlayerBulletType(100, 6, "circle", 1, Color.ORANGE, false, true, false, undefined, undefined, undefined, 10, 12, Color.ORANGE);
 
 let g_weaponPistol = new Weapon("pistol", 490, 1, function() {
@@ -9,7 +9,7 @@ let g_weaponPistol = new Weapon("pistol", 490, 1, function() {
     createPlayerHitscan(G_HITSCAN_BULLET, 0, 0);
 });
 
-let g_weaponNailgun = new Weapon("nailgun", 40, 0.04, function() {
+let g_weaponNailgun = new Weapon("nailgun", 40, 0.01, function() {
     if (soundEffects.nailgunSpin.paused) 
         soundEffects.nailgunSpin.play();
     soundEffects.nailgunSpin.volume = 0.4*g_volumeSound;
