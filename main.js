@@ -641,7 +641,7 @@ function updateObjects(deltaTime) {
                         playerBullet.x -= enemy.x;
                         playerBullet.y -= enemy.y;
                         playerBullet.parent = enemy;
-                        playerBullet.timestampDeath += 5000;
+                        playerBullet.timestampDeath += 3000;
                         break;
                     }
                 }
