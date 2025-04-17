@@ -1,4 +1,4 @@
-const G_BULLET_NAILGUN = new PlayerBulletType(13, 1.3, "triangle", 2, Color.WHITE, true, true, true, 2000, true, true, 8, 11, Color.CYAN);
+const G_BULLET_NAILGUN = new PlayerBulletType(13, 1.3, "triangle", 2, Color.WHITE, true, true, true, 1000, true, true, 8, 11, Color.CYAN);
 const G_BULLET_SHOTGUN = new PlayerBulletType(100, 6, "circle", 1, Color.ORANGE, false, true, false, undefined, undefined, undefined, 10, 12, Color.ORANGE);
 
 let g_weaponPistol = new Weapon("pistol", 490, 1, function() {
