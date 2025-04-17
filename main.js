@@ -192,7 +192,7 @@ function tick(p_currentTime) {
         }
         
         if (getControl("alt")) {
-            if (!g_weaponNailgun.magnetFiring && g_player.selectedWeapon === "nailgun") {
+            if (!g_weaponNailgun.magnetFiring && g_magnetInstances.length < 3 && g_player.selectedWeapon === "nailgun") {
                 g_weaponNailgun.magnetFiring = true;
                 if (g_magnetInstances.length == 0) {
                     for (let i = 0; i < g_playerBulletInstances.length; i++) {
