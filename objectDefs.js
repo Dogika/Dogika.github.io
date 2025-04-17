@@ -110,14 +110,14 @@ const AREA_DENIAL = new Pattern(
 const SLAP_CANNON_1 = new Pattern(
     new BulletType([new BulletBehavior(0, 0.05, 0, 0, 0),
                     new BulletBehavior(1500, 0.2, 0, 0, 0, true)
-                    ], 6, 5 * G_PREFERED_SCALAR, "triangle", 0, 1, Color.BLACK
+                    ], 16, 5 * G_PREFERED_SCALAR, "triangle", 0, 1, Color.BLACK
     ), 1, Math.PI * 0.3, 1, 0, 4, 0.5, 0, 0, 0, true
 );
 
 const SLAP_CANNON_2 = new Pattern(
     new BulletType([new BulletBehavior(0, 0.05, 0, 0, 0),
                     new BulletBehavior(1500, 0.2, 0, 0, 0, true)
-                    ], 6, 5 * G_PREFERED_SCALAR, "triangle", 0, 1, Color.WHITE
+                    ], 16, 5 * G_PREFERED_SCALAR, "triangle", 0, 1, Color.WHITE
     ), 1, Math.PI * -0.3, 1, 0, 4, 0.5, 0, 0, 0, true
 );
 
@@ -130,7 +130,7 @@ const SWIFT_DAGGERS = new Pattern(
                     new BulletBehavior(1600, 0.25, 0, 0, -Math.PI*0.5),
                     new BulletBehavior(1800, 0.25, 0, 0, Math.PI*0.5),
                     new BulletBehavior(2000, 0.25, 0, 0, -Math.PI*0.5)
-                    ], 15, 5 * G_PREFERED_SCALAR, "diamond", 0, 1, Color.CYAN
+                    ], 25, 5 * G_PREFERED_SCALAR, "diamond", 0, 1, Color.CYAN
     ), 3, 0, 1, 0, 1, 0, 0, 0, 0, false
 );
 
