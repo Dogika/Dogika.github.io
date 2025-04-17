@@ -58,7 +58,7 @@ function EnemyObject(type=null, x=0, y=0, ID=-1) {
         for (let i = 0; i < this.attacks[this.attackIndex].length; i++) {
             let behavior = this.attacks[this.attackIndex][i];
             g_timeline.push(new Event(
-                g_currentTime + behavior.timestamp, 
+                g_currentTime + behavior.timestamp + this.type.attackDelays[this.attackIndex], 
                 createFirePatternMethod(behavior, this)
             ));
         }
@@ -220,7 +220,7 @@ function EnemyObject(type=null, x=0, y=0, ID=-1) {
     }
 }
 
-function EnemyType(name, behaviors=[], moveBehavior, attackBehavior, maxHealth=100, radius, color) {
+function EnemyType(name, behaviors=[], moveBehavior, attackBehavior, maxHealth=100, radius, color, attackDelays=3000) {
     this.name = name;
     this.behaviors = behaviors;
     this.maxHealth = maxHealth;
@@ -229,6 +229,7 @@ function EnemyType(name, behaviors=[], moveBehavior, attackBehavior, maxHealth=1
     this.grounded; // if not grounded will allow player to knock them back
     this.moveBehavior = moveBehavior;
     this.attackBehavior = attackBehavior;
+    this.attackDelays = attackDelays;
 }
 
 function spawnEnemy(typeCopy, x, y, isBoss=false) {
@@ -246,6 +247,15 @@ function spawnEnemy(typeCopy, x, y, isBoss=false) {
     for (let behavior of enemy.type.behaviors) {
         if (!enemy.attacks[behavior.index]) enemy.attacks[behavior.index] = [];
         enemy.attacks[behavior.index] = enemy.attacks[behavior.index].concat(behavior.behaviorList);
+    }
+    
+    
+    if (!enemy.type.attackDelays.length) {
+        let sameValue = enemy.type.attackDelays;
+        enemy.type.attackDelays = [];
+        for (let i = 0; i < enemy.attacks.length; i++) {
+            enemy.type.attackDelays[i] = sameValue;
+        }
     }
     
     createMoveEnemyMethod(enemy.type.moveBehavior, enemy)();
