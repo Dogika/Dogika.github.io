@@ -78,7 +78,11 @@ function findTime(hitscan) {
             hitEnemy = enemy;
         }
     }
-    if (hitEnemy) hitscan.hitEnemies.push(hitEnemy);
+    if (hitEnemy) {
+        hitscan.hitEnemies.push(hitEnemy);
+        hitscan.dx = hitscan.dx * time;
+        hitscan.dy = hitscan.dy * time;
+    }
     
     let currentTime = hitscan.horizontalCollision(g_screenCenterFocus_y+g_screenHeight*0.5-G_WALL_THICKNESS);
     if (currentTime < time && currentTime > 0) {
