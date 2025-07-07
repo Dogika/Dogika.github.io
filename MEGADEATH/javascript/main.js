@@ -430,8 +430,8 @@ function updateObjects(deltaTime) {
 
     if (g_screenShakeMagnitude > 0) {
         let beta = Math.random() * 2 * Math.PI;
-        g_camera.x += Math.cos(beta) * g_screenShakeMagnitude;
-        g_camera.y += Math.sin(beta) * g_screenShakeMagnitude;
+        g_camera.x += Math.cos(beta) * g_screenShakeMagnitude * g_screenShakeMagnitude;
+        g_camera.y += Math.sin(beta) * g_screenShakeMagnitude * g_screenShakeMagnitude;
 
         g_screenShakeMagnitude -= G_SCREEN_SHAKE_DECAY * deltaTime * 0.01;
     }
