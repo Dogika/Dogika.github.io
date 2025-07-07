@@ -433,7 +433,7 @@ function updateObjects(deltaTime) {
         g_camera.x += Math.cos(beta) * g_screenShakeMagnitude;
         g_camera.y += Math.sin(beta) * g_screenShakeMagnitude;
 
-        g_screenShakeMagnitude -= G_SCREEN_SHAKE_DECAY * deltaTime;
+        g_screenShakeMagnitude -= G_SCREEN_SHAKE_DECAY * deltaTime * 0.1;
     }
     
     // draw floor color
