@@ -39,7 +39,7 @@ class WeaponHelper {
                 velocity_y
             ));
 
-            g_screenShakeMagnitude += p_bulletType.damage/400;
+            g_screenShakeMagnitude += p_bulletType.damage/500;
         }
     }
     

@@ -118,7 +118,7 @@ function createPlayerHitscan(hitscan_t, offset_x=0, offset_y=0) {
     
     g_playerHitscanInstances.push(hitscan);
 
-    g_screenShakeMagnitude += hitscan.type.damage/1500;
+    g_screenShakeMagnitude += 0.4;
 }
 
 function setPlayerHitscan(hitscan, offset_x, offset_y) {
