@@ -107,7 +107,7 @@ function RoomInstance(i, j, type, wallFunction, damageFunction, displayFunction,
                         y: spawnEnemyMethod.y + this.j * g_screenWidth,
                         size: 0.5
                     });
-                    g_screenShakeMagnitude += spawnEnemyMethod.instanceEnemy.maxHealth*0.01;
+                    g_screenShakeMagnitude += spawnEnemyMethod.instanceEnemy.maxHealth/G_BOSS_MAX_HEALTH;
                 }
             );
             

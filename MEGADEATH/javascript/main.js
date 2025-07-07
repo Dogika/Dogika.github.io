@@ -433,6 +433,9 @@ function updateObjects(deltaTime) {
         g_camera.x += Math.cos(beta) * g_screenShakeMagnitude * g_screenShakeMagnitude;
         g_camera.y += Math.sin(beta) * g_screenShakeMagnitude * g_screenShakeMagnitude;
 
+        if (g_screenShakeMagnitude > 1) {
+            g_screenShakeMagnitude = 1;
+        }
         g_screenShakeMagnitude -= G_SCREEN_SHAKE_DECAY * deltaTime * 0.01;
     }
     
@@ -590,7 +593,7 @@ function updateObjects(deltaTime) {
             consumable.display(ctx);
         }
         
-        i++; //forgot
+        i++;
     }
     
     i = 0;
