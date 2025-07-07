@@ -427,6 +427,14 @@ function updateObjects(deltaTime) {
             * (1-G_CAMERA_CENTER_PERCENT), 
         G_CAMERA_DECAY_SPEED, 
     deltaTime);
+
+    if (g_screenShakeMagnitude > 0) {
+        let beta = Math.random() * 2 * Math.PI;
+        g_camera.x += Math.cos(beta) * g_screenShakeMagnitude;
+        g_camera.y += Math.sin(beta) * g_screenShakeMagnitude;
+
+        g_screenShakeMagnitude -= G_SCREEN_SHAKE_DECAY * deltaTime;
+    }
     
     // draw floor color
     ctx.beginPath();

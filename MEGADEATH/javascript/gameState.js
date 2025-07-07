@@ -39,7 +39,7 @@ let g_playerFadinHitscans = [];
 let g_magnetInstances = [];
 let g_coinInstances = [];
 
-let g_screenShakeInstances = [];
+let g_screenShakeMagnitude = 0;
 
 let g_loopColors = [];
 let g_loopColorIDs = 0;
