@@ -5,6 +5,8 @@ let g_weaponPistol = new Weapon("pistol", 490, 1, function() {
     playSound(soundEffects.revolverShoot, g_volumeSound)
     
     g_weaponPistol.lastUsed = g_currentTime;
+
+    g_screenShakeMagnitude = 0.5;
     
     createPlayerHitscan(G_HITSCAN_BULLET, 0, 0);
 });
@@ -18,6 +20,7 @@ let g_weaponNailgun = new Weapon("nailgun", 40, 0.01, function() {
     playSound(soundEffects.nailgunFire, 0.6*g_volumeSound);
     
     g_weaponNailgun.lastUsed = g_currentTime;
+    g_screenShakeMagnitude = 0.4;
     
     let [dx, dy] = MathHelper.setMagnitude(g_player.radius, [g_target.x - g_player.x, g_target.y - g_player.y]);
     
@@ -58,6 +61,8 @@ let g_weaponShotgun = new Weapon("shotgun", 920, 0.02, function() {
     playSound(soundEffects.shotgunFire, 0.5*g_volumeSound);
     
     g_weaponShotgun.lastUsed = g_currentTime;
+
+    g_screenShakeMagnitude = 0.7;
     
     let [dx, dy] = MathHelper.setMagnitude(g_player.radius, [g_target.x - g_player.x, g_target.y - g_player.y]);
     
