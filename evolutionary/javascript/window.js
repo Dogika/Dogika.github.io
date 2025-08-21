@@ -57,7 +57,7 @@ function WindowRun(deltatime) {
     updateSeeds(deltatime);
     updateSoil(deltatime);
     updateRain(deltatime);
-    updateCreatures(deltatime);
+    //updateCreatures(deltatime);
 
     // Background
     drawBackground();
@@ -66,7 +66,7 @@ function WindowRun(deltatime) {
     // Middleground
     drawPlants();
     drawSeeds();
-    drawCreatures();
+    //drawCreatures();
 
     // Foreground
     drawRain();
@@ -271,4 +271,5 @@ function drawRain() {
     }*/
     ctx.fillStyle = "rgba(50, 50, 50, "+(0.33*g_rainLevel)+")";
     ctx.fillRect(0, 0, g_screenWidth, g_screenHeight);
+
 }
