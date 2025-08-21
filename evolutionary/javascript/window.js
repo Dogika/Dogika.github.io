@@ -112,7 +112,7 @@ function updateSoil(deltatime) {
         }
 
         if (g_rainLevel > 0) {
-            let rainChance = 0.1*g_rainLevel*g_rainLevel*g_rainLevel*deltatime;
+            let rainChance = 0.01*g_rainLevel*g_rainLevel*g_rainLevel*deltatime;
 
             if (Math.random() < rainChance) {
                 soil.moisture = Math.min(soil.moisture+0.01*(1+g_rainLevel)*deltatime, 1);
@@ -167,6 +167,12 @@ function updateSoil(deltatime) {
 function updateRain(deltatime) {
     if (getControl("rain")) {
         g_rainLevel = mod(g_rainLevel+0.001*deltatime, 1.1);
+    }
+    if (g_keyboard["0"]) {
+        g_rainLevel = 0;
+    }
+    if (g_keyboard["9"]) {
+        g_rainLevel = 1;
     }
     return; // not being used cuz ugly ig
     //g_rainLevel = (Math.sin(g_currentTime*0.0001)+1)*0.5;

@@ -5,6 +5,8 @@ function start() {
     addEventListener("mousemove", mouseEvent);
     addEventListener("mouseup", mouseEvent);
     addEventListener("mousedown", mouseEvent);
+
+    addEventListener("wheel", wheelEvent)
     
     addEventListener("touchstart", touchEvent);
     addEventListener("touchend", touchEvent);

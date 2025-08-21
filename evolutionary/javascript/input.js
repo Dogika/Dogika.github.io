@@ -25,8 +25,9 @@ function mouseEvent(e) {
     }
 }
 
-function directionEqualsInput(direction) {
-    return getControl("move" + capitalizeFirstLetter(direction));
+function wheelEvent(e) {
+    e.preventDefault();
+    g_zoom = Math.min(Math.max(0.125, g_zoom - e.deltaY * 0.01), 10);
 }
 
 function touchEvent(e) {
@@ -58,5 +59,5 @@ function getControl(controlType) {
     if (controlType == "rain") return g_keyboard["1"];
     
     throw new Error("CustomError: controlType '"+controlType+"' not registered!");
-
 }
+
