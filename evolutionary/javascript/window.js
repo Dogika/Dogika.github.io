@@ -112,7 +112,7 @@ function updateSoil(deltatime) {
         }
 
         if (g_rainLevel > 0) {
-            let rainChance = 0.1*g_rainLevel*deltatime;
+            let rainChance = 0.1*g_rainLevel*g_rainLevel*g_rainLevel*deltatime;
 
             if (Math.random() < rainChance) {
                 soil.moisture = Math.min(soil.moisture+0.01*(1+g_rainLevel)*deltatime, 1);
