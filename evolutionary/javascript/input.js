@@ -5,8 +5,8 @@ function keyDown(e) {
 }
 
 function keyUp(e) {
-    g_keyboard[e.key.toLowerCase()] = false;
-    g_keyboard.roomMove = true;
+    let lowerKeyse = e.key.toLowerCase();
+    g_keyboard[lowerKeyse] = false;
 }
 
 function mouseEvent(e) {
@@ -17,6 +17,12 @@ function mouseEvent(e) {
     g_mouse.y = e.pageY - bounds.top; // - scrollY;
     g_mouse.x *= canvas.width/bounds.width; // rescale mouse coordinates to canvas pixels
     g_mouse.y *= canvas.height/bounds.height;
+
+    if (e.type === "mousedown") {
+        g_mouse.down = true;
+    } else if (e.type === "mouseup") {
+        g_mouse.down = false;
+    }
 }
 
 function directionEqualsInput(direction) {
@@ -44,7 +50,11 @@ function getDirection() {
 
 function getControl(controlType) {
     
-    if (controlType == "moveUp")      return g_keyboard["w"] || g_keyboard["arrowup"];
+    if (controlType == "up") return g_keyboard["w"] || g_keyboard["arrowup"];
+    if (controlType == "left") return g_keyboard["a"] || g_keyboard["arrowleft"];
+    if (controlType == "down") return g_keyboard["s"] || g_keyboard["arrowdown"];
+    if (controlType == "right") return g_keyboard["d"] || g_keyboard["arrowright"];
+    if (controlType == "speedup") return g_keyboard[" "];
     
     throw new Error("CustomError: controlType '"+controlType+"' not registered!");
 }

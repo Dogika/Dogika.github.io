@@ -1,0 +1,43 @@
+<!--there are comments scattered around for our process-->
+<!-- altfire only works for the nailgun due to time limit.-->
+<!-- options was not implemented-->
+<!-- quit stops the program and leaves the title music and says goodbye in the console-->
+<!-- glowing orbs represent guns items that can be picked up-->
+<!-- altfire when holding the nailgun shoots out a magnet from the player that attracts the nails-->
+<!-- the white areas represent doors to the next or previous room-->
+<!-- lines of code at competition date: 3716-->
+<html>
+  <head>
+      <title>Evolutionary</title>
+      <link rel="icon" type="image/x-icon" href="resources/images/icon.png">
+  </head>
+  <body>
+    <canvas id="canvas" width="500" height="500"></canvas>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/howler/2.2.4/howler.min.js"></script>
+    <script src="https://unpkg.com/fontfaceobserver@2.1.0/fontfaceobserver.standalone.js"></script>
+    <script>"use strict";</script>
+    <script src="javascript/constants.js"></script>
+    <script src="javascript/input.js"></script>
+    <script src="javascript/main.js"></script>
+    <script src="javascript/math.js"></script>
+    <script src="javascript/state.js"></script>
+    <script src="javascript/soil.js"></script>
+    <script src="javascript/anima.js"></script>
+    <script src="javascript/food.js"></script>
+    <script src="javascript/plants.js"></script>
+    <script src="javascript/window.js"></script>
+    <script src="javascript/main.js" onload="start()"></script>
+<style>
+    #canvas {
+        margin: auto;
+        position: absolute;
+        top: 0;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        border: 1px solid #cccccc;
+        background-color: #FFFFFF;
+    }
+</style>
+  </body>
+</html>

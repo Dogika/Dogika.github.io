@@ -23,15 +23,15 @@ function setInitialTime(p_currentTime) {
 
 function tick(p_currentTime) {
     g_currentTime = p_currentTime;
-    let deltaTime = g_currentTime - g_previousTime;
-    if (deltaTime > 500)
-        deltaTime = 500;
+    let deltatime = g_currentTime - g_previousTime;
+    if (deltatime > 500)
+        deltatime = 500;
     ctx.clearRect(0, 0, g_screenWidth, g_screenHeight);
     if (g_window == "audioCheck") { // initial state
         WindowAudioCheck();
     }
     if (g_window == "run") {
-        WindowRun();
+        WindowRun(deltatime);
     }
     
     g_previousTime = p_currentTime;
