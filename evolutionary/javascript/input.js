@@ -26,8 +26,11 @@ function mouseEvent(e) {
 }
 
 function wheelEvent(e) {
-    e.preventDefault();
-    g_zoom = Math.min(Math.max(0.125, g_zoom - e.deltaY * 0.01), 10);
+    let newZoom = Math.min(Math.max(0.125, g_zoom + e.deltaY * 0.01), 10);
+    let zoomIncrease = newZoom - g_zoom;
+    g_x *= (1 + zoomIncrease);
+    g_y *= (1 + zoomIncrease);
+    g_zoom = newZoom
 }
 
 function touchEvent(e) {

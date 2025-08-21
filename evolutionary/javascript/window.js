@@ -216,12 +216,13 @@ function updateCreatures(deltatime) {
 function drawBackground() {
     ctx.fillStyle = "#fff";
     ctx.fillRect(0, 0, g_screenWidth, g_screenHeight);
-    
-    ctx.fillStyle = ctx.createPattern(createPatternImage(G_PATTERN_ZOOM_BASE*g_zoom), "repeat");
-    ctx.save();
-    ctx.translate(g_camera_x, g_camera_y, g_screenHeight*g_zoom);
-    ctx.fillRect(0, 0, g_screenWidth*g_zoom, g_screenHeight*g_zoom);
-    ctx.restore();
+    if (g_zoom > 0) {
+        ctx.fillStyle = ctx.createPattern(createPatternImage(G_PATTERN_ZOOM_BASE*g_zoom), "repeat");
+        ctx.save();
+        ctx.translate(g_camera_x, g_camera_y, g_screenHeight*g_zoom);
+        ctx.fillRect(0, 0, g_screenWidth*g_zoom, g_screenHeight*g_zoom);
+        ctx.restore();
+    }
 }
 
 function createPatternImage(zoom=1) {
