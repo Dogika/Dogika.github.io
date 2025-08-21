@@ -55,6 +55,8 @@ function getControl(controlType) {
     if (controlType == "down") return g_keyboard["s"] || g_keyboard["arrowdown"];
     if (controlType == "right") return g_keyboard["d"] || g_keyboard["arrowright"];
     if (controlType == "speedup") return g_keyboard[" "];
+    if (controlType == "rain") return g_keyboard["1"];
     
     throw new Error("CustomError: controlType '"+controlType+"' not registered!");
+
 }
