@@ -165,6 +165,9 @@ function updateSoil(deltatime) {
 }
 
 function updateRain(deltatime) {
+    if (getControl("rain")) {
+        g_rainLevel = mod(g_rainLevel+0.1, 1.1);
+    }
     return; // not being used cuz ugly ig
     //g_rainLevel = (Math.sin(g_currentTime*0.0001)+1)*0.5;
 
@@ -273,3 +276,4 @@ function drawRain() {
     ctx.fillRect(0, 0, g_screenWidth, g_screenHeight);
 
 }
+
