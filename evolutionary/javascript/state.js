@@ -42,7 +42,7 @@ let g_soil=[[]];
 
 let G_SOIL_LENGTH = 10;
 
-let g_rainLevel = 0.1;
+let g_rainLevel = 0.0;
 let g_rainDroplets = [];
 
 function initializeGameState() {

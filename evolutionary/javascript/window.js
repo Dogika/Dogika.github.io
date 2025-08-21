@@ -111,7 +111,7 @@ function updateSoil(deltatime) {
             soil.moisture = Math.min(soil.moisture+0.005*deltatime, 1);
         }
 
-        if (g_rainLevel > 0 ) {
+        if (g_rainLevel > 0) {
             let rainChance = 0.1*g_rainLevel/deltatime;
 
             if (Math.random() < rainChance) {
@@ -166,7 +166,7 @@ function updateSoil(deltatime) {
 
 function updateRain(deltatime) {
     if (getControl("rain")) {
-        g_rainLevel = mod(g_rainLevel+0.1, 1.1);
+        g_rainLevel = mod(g_rainLevel+0.001*deltatime, 1.1);
     }
     return; // not being used cuz ugly ig
     //g_rainLevel = (Math.sin(g_currentTime*0.0001)+1)*0.5;
