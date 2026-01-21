@@ -1,0 +1,326 @@
+<html>
+    <head>
+        <title>Pastonyck's Homepage!</title>
+        <link rel="icon" type="image/x-icon" href="resources/images/icon.png">
+    </head>
+    <canvas id="canvas"></canvas>
+    <body>
+        <script>
+function keyDown(e) {
+    if (e.ctrlKey == true) e.preventDefault();
+    g_gs.keyboard[e.key.toLowerCase()] = true;
+}
+
+function keyUp(e) {
+    g_gs.keyboard[e.key.toLowerCase()] = false;
+}
+
+function mouseEvent(e) {
+    let canvas = document.getElementById("canvas");
+    let bounds = canvas.getBoundingClientRect();
+    
+    g_gs.mouse.x = e.pageX - bounds.left; // - scrollX;
+    g_gs.mouse.y = e.pageY - bounds.top; // - scrollY;
+    g_gs.mouse.x *= canvas.width/bounds.width; // rescale mouse coordinates to canvas pixels
+    g_gs.mouse.y *= canvas.height/bounds.height;
+    
+    if (e.type === "mousedown") {
+        if (e.button === 0) {
+            g_gs.mouse.down = true;
+        } else {
+            g_gs.mouse.down2 = true;
+        }
+    } else if (e.type === "mouseup") {
+        if (e.button === 0) {
+            g_gs.mouse.down = false;
+        } else {
+            g_gs.mouse.down2 = false;
+        }
+    }
+}
+
+function getControl(controlType) {
+    
+    if (controlType == "out")    return g_gs.keyboard["a"];
+    if (controlType == "in")  return g_gs.keyboard["d"];
+    if (controlType == "reset")  return g_gs.keyboard["r"];
+    if (controlType == "type1")  return g_gs.keyboard["1"];
+    if (controlType == "type2")  return g_gs.keyboard["2"];
+    if (controlType == "type3")  return g_gs.keyboard["3"];
+    
+    throw new Error("CustomError: controlType '"+controlType+"' not registered!");
+}
+        </script>
+        <script>
+const [g_screenWidth, g_screenHeight, g_screenScale] = findResolution(window.innerWidth, window.innerHeight);
+
+function findResolution(width, height) {
+    
+    // aspect ratio 16:9
+    
+    let w_ar = 16;
+    let h_ar = 9;
+    
+    let f = Math.min(width/w_ar, height/h_ar);
+    
+    return [f * w_ar, f * h_ar, f];
+}
+
+const canvas = document.getElementsByTagName('canvas')[0];
+    canvas.width = g_screenWidth;
+    canvas.height = g_screenHeight;
+    canvas.oncontextmenu = function(e) { e.preventDefault(); e.stopPropagation(); }
+const ctx = canvas.getContext("2d");
+
+const g_gs = {}; //game state
+
+const G_STARTING_ENERGY = 0;
+
+const G_NUM_PARTICLES = 1000;
+
+function initializeGamestate() {
+    
+    g_gs.zoom = 0.1;
+    
+    g_gs.mouse = {
+        x: 0,
+        y: 0,
+        down: false
+    }
+    
+    g_gs.friction = 0.99;
+    
+    g_gs.keyboard = {};
+    
+    g_gs.particles = [];
+    
+    for (let i = 0; i < G_NUM_PARTICLES; i++) {
+        let particle = {
+            x: (Math.random()*0.5+0.25) * g_screenWidth,
+            y: (Math.random()*0.5+0.25) * g_screenHeight,
+            vx: 0,
+            vy: 0,
+            a: Math.exp(10*(Math.random() - 0.5)),
+            b: Math.exp(10*(Math.random() - 0.5))
+        }
+        
+        let randA = Math.log(particle.a)*0.1+0.5;
+        let randB = Math.log(particle.b)*0.1+0.5;
+        
+        particle.color = `rgba(${255*(randA)}, ${255*(randB)}, ${255*(1-0.5*(randA+randB))}, 1)`;
+        
+        particle.p1 = 12;
+        particle.p2 = 6;
+        
+        particle.b = particle.a;
+        
+        g_gs.particles[i] = particle;
+    }
+    
+    g_gs.previousTime = 0;
+    g_gs.currentTime = 0;
+}
+
+function createParticle(p_x, p_y) {
+    let particle = {
+        x: p_x+Math.random()*g_screenScale*g_gs.zoom,
+        y: p_y+Math.random()*g_screenScale*g_gs.zoom,
+        vx: 0,
+        vy: 0,
+        a: Math.exp(10*(Math.random() - 0.5)),
+        b: Math.exp(10*(Math.random() - 0.5))
+    }
+    
+    let randA = Math.log(particle.a)*0.1+0.5;
+    let randB = Math.log(particle.b)*0.1+0.5;
+    
+    particle.color = `rgba(${255*(randA)}, ${255*(randB)}, ${255*(1-0.5*(randA+randB))}, 1)`;
+    
+    particle.p1 = 12;
+    particle.p2 = 6;
+    
+    g_gs.particles.push(particle);
+}
+
+function getKineticEnergy(r, a, b, p1, p2) {
+    let potentialEnergy;
+    
+    let aR = a / r; aR *= aR; aR *= aR;
+    
+    let bR = b / r; bR *= bR;
+    
+    potentialEnergy = aR * aR * aR - bR * bR * bR;
+    
+    return Math.max(0, G_STARTING_ENERGY - potentialEnergy);
+}
+
+start(); // I START IT HERE!!!!!!!!!!!
+function start() {
+    addEventListener("keydown", keyDown);
+    addEventListener("keyup", keyUp);
+    
+    addEventListener("mousemove", mouseEvent);
+    addEventListener("mouseup", mouseEvent);
+    addEventListener("mousedown", mouseEvent);
+    
+    initializeGamestate();
+    
+    requestAnimationFrame(setInitialTime);
+}
+
+function setInitialTime(p_currentTime) {
+    g_gs.previousTime = p_currentTime;
+    requestAnimationFrame(main);
+}
+
+function main(p_currentTime) {
+    let deltaTime = p_currentTime - g_gs.previousTime;
+    g_gs.currentTime = p_currentTime;
+    
+    drawBg();
+    updateParticles(deltaTime);
+    drawParticles();
+    
+    if (!getControl("in")) {
+        g_gs.pressedIn = false;
+    }
+    if (getControl("in") && !g_gs.pressedIn) {
+        g_gs.pressedIn = true;
+        g_gs.zoom *= 0.9090909091;
+    }
+    
+    if (!getControl("out")) {
+        g_gs.pressedOut = false;
+    }
+    if (getControl("out") && !g_gs.pressedOut) {
+        g_gs.pressedOut = true;
+        g_gs.zoom *= 1.1;
+    }
+    
+    if (g_gs.mouse.down) {
+        createParticle((g_gs.mouse.x - g_screenWidth*0.5) / g_gs.zoom + g_screenWidth*0.5, (g_gs.mouse.y - g_screenHeight*0.5) / g_gs.zoom + g_screenHeight*0.5);
+    }
+    
+    if (getControl("reset")) {
+        g_gs.particles=[];
+    }
+    
+    if (getControl("type1")) {
+        g_gs.friction = 0.99;
+    }
+    if (getControl("type2")) {
+        g_gs.friction = 0;
+    }
+    if (getControl("type3")) {
+        g_gs.friction = 1;
+    }
+    
+    g_gs.previoustime = p_currentTime;
+    requestAnimationFrame(main)
+}
+
+function drawBg() {
+    ctx.fillStyle = "#111";
+    ctx.fillRect(0, 0, g_screenWidth, g_screenHeight);
+    
+    ctx.fillStyle = "#DDD";
+    if (g_gs.friction === 0) {
+        ctx.fillRect(1.59*g_screenScale, 2.1*g_screenScale, g_screenScale*0.3, g_screenScale*0.5);
+    } else if (g_gs.friction === 1) {
+        ctx.fillRect(2.19*g_screenScale, 2.1*g_screenScale, g_screenScale*0.3, g_screenScale*0.5);
+    } else {
+        ctx.fillRect(g_screenScale, 2.1*g_screenScale, g_screenScale*0.3, g_screenScale*0.5);
+    }
+    ctx.fillStyle = "#333";
+    ctx.font = Math.floor(g_screenScale * 0.5) + "px Courier New";
+    ctx.fillText("a/d - zoom in/out", g_screenScale, g_screenScale);
+    ctx.fillText("click - create dots", g_screenScale, 1.5*g_screenScale);
+    ctx.fillText("r - clear dots", g_screenScale, 2*g_screenScale);
+    ctx.fillText("1/2/3 - change friction", g_screenScale, 2.5*g_screenScale);
+}
+
+function drawParticles() {
+    for (let i = 0; i < g_gs.particles.length; i++) {
+        let particle = g_gs.particles[i];
+        
+        ctx.fillStyle = particle.color;
+        ctx.beginPath();
+        ctx.arc((particle.x - g_screenWidth*0.5) * g_gs.zoom + g_screenWidth*0.5, (particle.y - g_screenHeight*0.5) * g_gs.zoom + g_screenHeight*0.5, g_screenScale*0.12*g_gs.zoom, 0, 2 * Math.PI);
+        ctx.fill();
+    }
+}
+
+const B = 0.01;
+const A = 100;
+
+function dragSimulation(v0, p_deltaTime) {
+    return B * v0 * Math.exp(-B * p_deltaTime) / (B + A * v0 * (1 - Math.exp(-B * p_deltaTime)));
+}
+
+function mod(x, n) {
+    return x - n * Math.floor(x / n);
+}
+
+function updateParticles(p_deltatime) {
+    for (let i = 0; i < g_gs.particles.length; i++) {
+        let particle = g_gs.particles[i];
+        
+        particle.x = particle.x + particle.vx * p_deltatime;
+        particle.y = particle.y + particle.vy * p_deltatime;
+        
+        particle.vx *= g_gs.friction;
+        particle.vy *= g_gs.friction;
+    }
+    
+    for (let i = 0; i < g_gs.particles.length; i++)
+    for (let j = i + 1; j < g_gs.particles.length; j++) {
+        let particle = g_gs.particles[i];
+        let other = g_gs.particles[j];
+        
+        let dx = other.x - particle.x;
+        let dy = other.y - particle.y;
+        
+        let r = Math.sqrt(Math.abs(dx * dx + dy * dy)) + 0.0000001;
+        
+        let kineticEnergy = getKineticEnergy(r, particle.a, particle.b, particle.p1, particle.p2);
+        
+        let velocityMagnitude = 0.00000001 * Math.sqrt(2 * Math.abs(kineticEnergy));
+        
+        particle.vx += velocityMagnitude * dx / r * p_deltatime;
+        particle.vy += velocityMagnitude * dy / r * p_deltatime;
+        
+        other.vx += velocityMagnitude * dx / r * p_deltatime;
+        other.vy += velocityMagnitude * dy / r * p_deltatime;
+    }
+}
+        </script>
+        
+        <div class="links">
+            <a href="MEGADEATH">MEGADEATH</a>
+        </div>
+    </body>
+    <style>
+        #canvas {
+            margin: auto;
+            position: absolute;
+            top: 0;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            z-index: 0;
+        }
+        body {
+          background-color: #111;
+        }
+        .links {
+            position: absolute;
+            z-index: 1;
+        }
+        .links a {
+            font-size: 250%;
+            font-weight: bold;
+            color: white;
+        }
+    </style>
+    
+</html>
